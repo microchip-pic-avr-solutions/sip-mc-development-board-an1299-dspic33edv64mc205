@@ -70,7 +70,7 @@ void InitFWParams(void)
     /* Flux reference value */
     fdWeakParm.qIdRef = IDREF_BASESPEED;
     /* Start speed for Field weakening  */
-    fdWeakParm.qFwOnSpeed = FWONSPEED - (1 << SPEED_INDEX_CONST);
+    fdWeakParm.qFwOnSpeed = FWONSPEED;
 
     /* Initialize magnetizing curve values */
     fdWeakParm.qFwCurve[0] = IDREF_SPEED0;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="62">
+<configurationDescriptor version="65">
   <logicalFolder name="root" displayName="root" projectFiles="true">
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
@@ -10,6 +10,11 @@
         <itemPath>../hal/uart1.h</itemPath>
         <itemPath>../hal/board_service.h</itemPath>
         <itemPath>../hal/delay.h</itemPath>
+        <itemPath>../hal/uart2.h</itemPath>
+        <itemPath>../hal/bsp.h</itemPath>
+        <itemPath>../hal/hardware_access_functions.h</itemPath>
+        <itemPath>../hal/hardware_access_functions_params.h</itemPath>
+        <itemPath>../hal/hardware_access_functions_types.h</itemPath>
       </logicalFolder>
       <logicalFolder name="lib" displayName="lib" projectFiles="true">
         <itemPath>../lib/motor_control/motor_control_declarations.h</itemPath>
@@ -44,6 +49,8 @@
         <itemPath>../hal/sys_config.c</itemPath>
         <itemPath>../hal/uart1.c</itemPath>
         <itemPath>../hal/board_service.c</itemPath>
+        <itemPath>../hal/uart2.c</itemPath>
+        <itemPath>../hal/hardware_access_functions.c</itemPath>
       </logicalFolder>
       <itemPath>../estim.c</itemPath>
       <itemPath>../fdweak.c</itemPath>
@@ -70,14 +77,17 @@
     <conf name="default" type="2">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
-        <targetDevice>dsPIC33EP256MC506</targetDevice>
+        <targetDevice>dsPIC33EDV64MC205</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
         <platformTool>RealICEPlatformTool</platformTool>
         <languageToolchain>XC16</languageToolchain>
-        <languageToolchainVersion>1.31</languageToolchainVersion>
+        <languageToolchainVersion>1.36</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
+      <packs>
+        <pack name="dsPIC33EDV-MC-205_DFP" vendor="Microchip" version="1.0.16"/>
+      </packs>
       <compileType>
         <linkerTool>
           <linkerLibItems>
@@ -126,7 +136,55 @@
         <C30Global>
         </C30Global>
       </item>
-      <item path="../lib/x2cscope/X2CScope.h" ex="true" overriding="false">
+      <item path="../lib/x2cscope/X2CScope.h" ex="false" overriding="false">
+        <C30>
+        </C30>
+        <C30-AR>
+        </C30-AR>
+        <C30-AS>
+        </C30-AS>
+        <C30-LD>
+        </C30-LD>
+        <C30Global>
+        </C30Global>
+      </item>
+      <item path="../rtdm.h" ex="true" overriding="false">
+        <C30>
+        </C30>
+        <C30-AR>
+        </C30-AR>
+        <C30-AS>
+        </C30-AS>
+        <C30-LD>
+        </C30-LD>
+        <C30Global>
+        </C30Global>
+      </item>
+      <item path="../rtdm_hal_adapter.h" ex="true" overriding="false">
+        <C30>
+        </C30>
+        <C30-AR>
+        </C30-AR>
+        <C30-AS>
+        </C30-AS>
+        <C30-LD>
+        </C30-LD>
+        <C30Global>
+        </C30Global>
+      </item>
+      <item path="../rtdm_select_channels.h" ex="true" overriding="false">
+        <C30>
+        </C30>
+        <C30-AR>
+        </C30-AR>
+        <C30-AS>
+        </C30-AS>
+        <C30-LD>
+        </C30-LD>
+        <C30Global>
+        </C30Global>
+      </item>
+      <item path="../rtdmuser.h" ex="true" overriding="false">
         <C30>
         </C30>
         <C30-AR>
@@ -154,7 +212,7 @@
         <property key="enable-symbols" value="true"/>
         <property key="enable-unroll-loops" value="false"/>
         <property key="extra-include-directories"
-                  value="..;..\lib\motor_control;..\lib\x2cscope"/>
+                  value="..;..\lib\motor_control;..\lib\x2cscope;..\hal"/>
         <property key="isolate-each-function" value="false"/>
         <property key="keep-inline" value="false"/>
         <property key="oXC16gcc-align-arr" value="false"/>
@@ -304,7 +362,7 @@
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
         <property key="UART 1" value="true"/>
         <property key="UART 2" value="true"/>
-        <property key="debugoptions.useswbreakpoints" value="false"/>
+        <property key="debugoptions.useswbreakpoints" value="true"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="hwtoolclock.instructionspeed" value="4"/>
         <property key="hwtoolclock.units" value="mips"/>

@@ -37,6 +37,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "hardware_access_functions.h"
 #ifdef __XC16__  // See comments at the top of this header file
     #include <xc.h>
 #endif // __XC16__
@@ -44,6 +45,18 @@
 #ifdef __cplusplus  // Provide C++ Compatability
     extern "C" {
 #endif
+
+/** 
+ * System States 
+ * SYSTEM_INITIALISATION
+ * SYSTEM_RUNNING
+ */
+typedef enum tagSYSTEM_STATE
+{ 
+    SYSTEM_INITIALIZATION = 0,      /* System Initialization Stage */
+    SYSTEM_READY = 1,               /* System is Ready */
+     
+}SYSTEM_STATE;
 
 /* Button Scanning State
 
@@ -83,6 +96,8 @@ extern void BoardService(void);
 extern bool IsPressed_Button1(void);
 extern bool IsPressed_Button2(void);
 
+extern volatile uint16_t systemState;
+extern volatile HAL_BOARD_STATUS runtimeState;
 #ifdef __cplusplus
 }
 #endif

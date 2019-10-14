@@ -36,7 +36,12 @@
 #include <stdbool.h>
 #include "sys_config.h"
 #include "board_service.h"
+#include "hardware_access_functions.h"
 
+/** Maintains runtime state of Board_Service() or Board_Configure() functions */
+volatile HAL_BOARD_STATUS runtimeState;
+
+volatile uint16_t systemState = 0;
 BUTTON_T buttonStartStop,buttonSpeedHalfDouble;
 uint16_t boardServiceISRCounter = 0;
 
@@ -89,13 +94,36 @@ void BoardService(void)
         /* Button scanning loop for SW2 to enter into filed
             weakening mode */
         ButtonScan(&buttonSpeedHalfDouble,BUTTON_SPEED_HALF_DOUBLE);
+        
+        switch(systemState)
+        {
+            case SYSTEM_INITIALIZATION: 
+                runtimeState = HAL_Board_Configure();
+                if(runtimeState == BOARD_READY)
+                {
+                    systemState = SYSTEM_READY;
+                }
+            break;
+            case SYSTEM_READY:
+                runtimeState = HAL_Board_Service();
+                if(runtimeState == BOARD_ERROR)
+                {
+                }
+                else
+                {
+                }
+            break;
+            case 2:
+                
+            break;
+        }
         boardServiceISRCounter = 0;
     }
 }
 void BoardServiceInit(void)
 {
     ButtonGroupInitialize();
-    boardServiceISRCounter = BOARD_SERVICE_TICK_COUNT;
+    boardServiceISRCounter = BOARD_SERVICE_TICK_COUNT;      
 }
 
 void ButtonScan(BUTTON_T *pButton,bool button) 
@@ -104,7 +132,7 @@ void ButtonScan(BUTTON_T *pButton,bool button)
     {
         if (pButton->debounceCount < BUTTON_DEBOUNCE_COUNT) 
         {
-            pButton->debounceCount--;
+            pButton->debounceCount++;
             pButton->state = BUTTON_DEBOUNCE;
         }
     } 

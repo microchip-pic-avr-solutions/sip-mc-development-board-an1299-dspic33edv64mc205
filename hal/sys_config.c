@@ -23,7 +23,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #include <xc.h>
 #include <stdint.h>
 #include "sys_config.h"
-
+void configureGateDriverFault(void);
 // *****************************************************************************
 /* Function:
     Map_GPIO_HW_Funtion()
@@ -53,15 +53,23 @@ void MapGPIOHWFuntion(void)
  
     /* ANALOG SIGNALS */
 
-    // Configure Port pins for Motor Current Snesing
+    // Configure Port pins for Motor Current Sensing
 	
     // IPHASE2_A/IB_A(AN0) : PIM #42
-    TRISAbits.TRISA0 = 1;    // AN0/OA2OUT/RA0
-    ANSELAbits.ANSA0 = 1;
+    TRISCbits.TRISC0 = 1;    // AN6/OA3OUT/RC0
+    ANSELCbits.ANSC0 = 1;
+    TRISCbits.TRISC1 = 1;    // AN7/C3IN1-/RC1
+    ANSELCbits.ANSC1 = 1;
+    TRISCbits.TRISC2 = 1;    // AN8/C3IN1+/RC2
+    ANSELCbits.ANSC2 = 1;
 
     // IPHASE1_A/IA_A(AN1) : PIM #41
-    TRISAbits.TRISA1 = 1;    // AN1/C2IN1+/RA1
-    ANSELAbits.ANSA1 = 1;
+    TRISBbits.TRISB1 = 1;    // AN3//OA1OUT/RB1
+    ANSELBbits.ANSB1 = 1;
+    TRISBbits.TRISB2 = 1;    // AN4/C1IN1+/RB2
+    ANSELBbits.ANSB2 = 1;
+    TRISBbits.TRISB3 = 1;    // AN5/C1IN1-/RB3
+    ANSELBbits.ANSB3 = 1;
 
     // IBUS_A(AN2) : PIM #43
     TRISBbits.TRISB0 = 1;    // PGED3/VREF-/AN2/C2IN1-/SS1/RPI32/CTED2/RB0
@@ -69,13 +77,13 @@ void MapGPIOHWFuntion(void)
 
     // Potentiometer #1 input - used as Speed Reference
     // POT1 : PIM #32
-    TRISEbits.TRISE13 = 1;          // AN13/C3IN2-/U2CTS/RE13
-    ANSELEbits.ANSE13 = 1;
+    TRISAbits.TRISA0 = 1;    // AN0/OA2OUT/RA0
+    ANSELAbits.ANSA0 = 1;
 
     // Inverter DC bus voltage Sensing
     // VBUS_A : PIM #35
-    TRISAbits.TRISA12 = 1;          // AN10/RPI28/RA12
-    ANSELAbits.ANSA12 = 1;
+    TRISAbits.TRISA1 = 1;    // AN1/C2IN1+/RA1
+    ANSELAbits.ANSA1 = 1;
 
     // DIGITAL INPUT/OUTPUT PINS
 
@@ -89,57 +97,44 @@ void MapGPIOHWFuntion(void)
     TRISB = (TRISB & 0x03FF);        // 0b0000 00XX XXXX XXXX
     LATB  = (LATB & 0x03FF);         // Setting all PWM outputs as 'LOW'
     
-    // FAULT Pins
-    // FAULT : PIM #18
-    TRISBbits.TRISB4 = 1;            // FLT32/SCL2/RP36/RB4
-
-    // Hall inputs - Inverter 
-    // HALLA : PIM #80
-    TRISAbits.TRISA8 = 1;            // SDA2/RPI24/RA8
-    // HALLB: PIM #47
-    TRISCbits.TRISC6 = 1;            // RP54/RC6
-    // HALLC : PIM #48
-    TRISFbits.TRISF0 = 1;            // RPI96/RF0
-    // HOME: PIM #61
-    TRISCbits.TRISC10 = 1;           // RPI58/RC10
-
     // Debug LEDs
     // LED1 : PIM #01
-    TRISDbits.TRISD5 = 0;           // AN56/RA10
+    TRISBbits.TRISB7 = 0;           // AN56/RA10
     // LED2 : PIM #60
-    TRISDbits.TRISD6 = 0;           // RPI72/RD8
+    TRISAbits.TRISA4 = 0;           // RPI72/RD8
 
     // Push button Switches
     // SW1 : PIM #83
-    TRISGbits.TRISG7 = 1;            // AN30/CVREF+/RPI52/RC4
+    TRISCbits.TRISC6 = 1;            // AN30/CVREF+/RPI52/RC4
     // SW2 : PIM #84
-    TRISGbits.TRISG6 = 1;            // AN19/RP118/RG6
+    TRISGbits.TRISG8 = 1;            // AN19/RP118/RG6
 
     // UART - for RTDM/DMCI Communication
-    // UART_RX : PIM #49 (Input)
-    TRISCbits.TRISC5 = 1;            // SCL1/RPI53/RC5
-    // UART_TX : PIM #50(Output)
-    TRISFbits.TRISF1 = 0;            // RP97/RF1
+    TRISAbits.TRISA8 = 1;               // UART1 RX input - SDA2/RPI24/RA8
+    TRISBbits.TRISB4 = 0;               // UART1 TX output - FLT32/SCL2/RP36/RB4
+ 
 
-    /************************** Remappable PIn configuration ******************/
+    _U1RXR = 24;                // UART1 RX - RP24
+    _RP36R = 1;                 // UART1 TX - RP36
 
-    //Unlock registers by clearing IOLOCK bit OSCCON(OSCONbits.IOLOCK = 0)
-    __builtin_write_OSCCONL(OSCCON & (~(1 << 6))); 
+    
+    _CNPUG6 = 1;
+    _CNPUA7 = 1;
+    _CNPUA10 = 1;
+    
+     configureGateDriverFault();
 
-    // RTDM Communication RX and TX configuration ( UART #1)
-    // UART_RX : PIM #49 (Input)
-    // Configure RP53 as U1RX
-    _U1RXR = 53;         // SCL1/RPI53/RC5
-    // UART_TX : PIM #50 (Output)
-    // Remap RP53 as U1RX
-    _RP97R = 0x01;                  // RP97/RF1
-
-    // Lock registers by setting IOLOCK bit OSCCON(OSCONbits.IOLOCK = 1)
-    __builtin_write_OSCCONL(OSCCON | (1 << 6)); // Set bit 6
-
-    /**************************************************************************/
-
-    return;
 }
-
-/*EOF*/
+void configureGateDriverFault(void)
+{
+    _CNPUA10 = 1;
+    
+    TRISAbits.TRISA10 = 1;
+    // Enable RA10 pin for interrupt detection
+    CNENAbits.CNIEA10 = 1; 
+    // Enable CN interrupts
+    IEC1bits.CNIE = 1; 
+    // Reset CN interrupt
+    IFS1bits.CNIF = 0; 
+   _CNIP  = 7;
+}

@@ -54,9 +54,9 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // Digital I/O definitions
 // Push button Switches
 // SW1 : PIM #83 (RG7)
-#define S2                  !PORTGbits.RG7
+#define S2                  !PORTCbits.RC6
 // SW2 : PIM #84 (RG6)
-#define S3                  !PORTGbits.RG6
+#define S3                  !PORTGbits.RG8
 
 // SW1 : PIM #69 - Used as START/STOP button of Motor A
 #define BUTTON_START_STOP          S2
@@ -65,16 +65,16 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 // Debug LEDs
 // LED1 : PIM #01(RD6)
-#define LED1                    LATDbits.LATD6
+#define LED1                    LATBbits.LATB7
 // LED2 : PIM #60(RD5)
-#define LED2                    LATDbits.LATD5
+#define LED2                    LATAbits.LATA4
 
 // Value in Ohms of shunt resistors used.        
-#define RSHUNT					0.015	
+#define RSHUNT					0.010	
 // Gain of differential amplifier.
-#define DIFF_AMP_GAIN			15.0
+#define DIFF_AMP_GAIN			7.5
 // maximum current (peak to peak) that can be read by adc with the shunt/opamp settings above	
-#define IPEAK                   4.4      
+#define IPEAK                   22.0      
 
 
 // MC PWM MODULE Related Definitions
@@ -85,15 +85,16 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // ADC MODULE Related Definitions
 // Analog Channel No of Potentiometer #1 - used as Speed Reference
 // POT1 : PIM #32 (AN13)
-#define ANx_POT_1               13
+#define ANx_POT_1               0
 // Analog Channel No of Inverter A DC bus voltage VDC_A
 // VBUS_A : PIM #35 (AN10)
-#define ANx_VBUS_A              10
+#define ANx_VBUS_A              1
 
-#define ADCBUF_SPEED_REF_A      ADC1BUF0
-#define ADCBUF_INV_A_IPHASE1    ADC1BUF2
-#define ADCBUF_INV_A_IPHASE2    ADC1BUF1
-#define ADCBUF_INV_A_IBUS       ADC1BUF3
+// CH123SA = 1 is M1_IB = OA1/AN3 POT1 = OA2/AN0 M1_IA = OA3/AN6
+#define ADCBUF_SPEED_REF_A      ADC1BUF2
+#define ADCBUF_INV_A_IPHASE1    ADC1BUF1
+#define ADCBUF_INV_A_IPHASE2    ADC1BUF3
+#define ADCBUF_INV_A_IBUS       ADC1BUF0
 
 // Specify bootstrap charging time in no of us
 #define BOOTSTRAP_CHARGING_TIME 30000

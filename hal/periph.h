@@ -55,7 +55,7 @@
 // Section: Constants
 // *****************************************************************************
 // *****************************************************************************
-// OSCILLATOR Related Defintions
+// OSCILLATOR Related Definitions
 #define OSC_FRC                 0               // Internal RC Oscllator
 #define OSC_XTAL                1               // Primary oscillator - XTAL
 // Select Oscillator Mode
@@ -70,12 +70,12 @@
 // DEVICE RELATED SPECIFICATIONS
 // Specify device operative voltage VDD in volts
 #define DEVICE_VDD_VOLTS        3.3
-// Specify device anlog supply voltage VDD in volts
+// Specify device analog supply voltage VDD in volts
 #define DEVICE_AVDD_VOLTS       DEVICE_VDD_VOLTS
 
-// Digital I/O defintions
-// MC PWM MODULE Related Defintions
-// Calculating deadtime in units of Tcy(Centre aligned Mode)
+// Digital I/O definitions
+// MC PWM MODULE Related Definitions
+// Calculating dead time in units of Tcy(Center aligned Mode)
 #define PWM_DT_ERRATA
 
 #define DDEADTIME               (uint16_t)(2*DEADTIME_MICROSEC*FCY_MHZ)
@@ -95,7 +95,7 @@
 
 // ADC MODULE Related Defintions
 // Specify Minimum ADC Clock Period (TAD)in uSec
-#define ADC_MIN_TAD_MICROSEC     0.075
+#define ADC_MIN_TAD_MICROSEC     0.1
 // Specify Max Time to stabilize Analog Stage from ADC OFF to ADC ON in uSecs
 // The parameter, tDPU, is the time required for the ADC module to stabilize at
 // the appropriate level when the module is turned on (AD1CON1<ADON> = 1).
@@ -113,12 +113,12 @@
 #define CH123_IS_AN0_AN1_AN2    0x00
 
 // Setting Channel No connected to ADC1 Sample/Hold Channel #0(ADC1-CH0)
-// POT1 is connected for sample/conversion by ADC1 CH0
-#define ADC1_ANx_CH0            ANx_POT_1
+// IBUS is connected for sample/conversion by ADC1 CH0
+#define ADC1_ANx_CH0            2
 // Setting Channels to be connected to ADC1 Sample/Hold Channels 1,2,3
 // for simultaneous sampling  : AN0(IB),AN1(IA),AN2(IBUS)
-#define ADC1_ANx_CH123          CH123_IS_AN0_AN1_AN2
-// Caluclating  ADC conversion clock count ADCS from Min ADC Clock Period (TAD)
+#define ADC1_ANx_CH123          CH123_IS_OA1_OA2_OA3
+// Calculating  ADC conversion clock count ADCS from Min ADC Clock Period (TAD)
 // TAD = Tp*(ADCS<7:0> + 1)= (1/Fp)*(ADCS<7:0> + 1)
 // ADCS<7:0> = (MIN_TAD * Fp ) - 1 ~ (MIN_TAD * Fp )
 // Subtraction by 1 is ignored as Min TAD cycle has to be met

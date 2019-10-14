@@ -32,9 +32,7 @@
 * certify, or support the code.
 *
 *******************************************************************************/
-#ifdef __XC16__  // See comments at the top of this header file
-    #include <xc.h>
-#endif // __XC16__
+#include <xc.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -55,6 +53,7 @@
 #include "hal/board_service.h"
 
 #include "diagnostics.h"
+#include "delay.h"
 
 volatile UGF_T uGF;
 
@@ -80,6 +79,13 @@ MC_PIPARMOUT_T piOutputId;
 MC_PIPARMIN_T piInputOmega;
 MC_PIPARMOUT_T piOutputOmega;
    
+/** Definitions */
+/* Open loop angle scaling Constant - This corresponds to 1024(2^10)
+   Scaling down motorStartUpData.startupRamp to thetaElectricalOpenLoop   */
+#define STARTUPRAMP_THETA_OPENLOOP_SCALER       10 
+/** Define max voltage vector */
+#define MAX_VOTLAGE_VECTOR                      0.92
+
 void InitControlParameters(void);
 void DoControl(void);
 void CalculateParkAngle(void);
@@ -112,13 +118,13 @@ void ResetParmeters(void);
 int main ( void )
 {
     InitOscillator();
+
     SetupGPIOPorts();
     DiagnosticsInit();
     /* Initialize Peripherals */
     InitPeripherals();
-    
     /* Initializing Current offsets in structure variable */
-    InitMeasCompCurr(adcOffset.ch2,adcOffset.ch1, &measCurrParm);
+    InitMeasCompCurr(adcOffset.ch1,adcOffset.ch3, &measCurrParm);
     
     BoardServiceInit();
     CORCONbits.SATA = 0;
@@ -134,11 +140,23 @@ int main ( void )
         /* Reset parameters used for running motor through Inverter A*/
         ResetParmeters();
 
+        while(systemState != SYSTEM_READY)
+        {
+            BoardService();
+        }
+        HAL_Board_Board_FaultClear();
         while(1)
         {
             DiagnosticsStepMain();
             BoardService();
-            
+            if(uGF.bits.RunMotor == 0)
+            {
+                LED1 = 1;
+            }
+            else
+            {
+                LED1 = 0;
+            }
             if(IsPressed_Button1())
             {
                 if(uGF.bits.RunMotor == 1)
@@ -147,18 +165,21 @@ int main ( void )
                 }
                 else
                 {
+                    IOCON1 = 0xC001;
+                    IOCON2 = 0xC001;
+                    IOCON3 = 0xC001;
                     uGF.bits.RunMotor = 1;
                 }
 
             }
-            if(uGF.bits.RunMotor == 1)
+            if(IsPressed_Button2())
             {
-                if(IsPressed_Button2())
+                if((uGF.bits.RunMotor == 1) && (uGF.bits.OpenLoop == 0))
                 {
                     uGF.bits.ChangeSpeed = !uGF.bits.ChangeSpeed;
                 }
             }
-
+            
         }
 
     } // End of Main loop
@@ -190,6 +211,10 @@ int main ( void )
  */
 void ResetParmeters(void)
 {
+    IOCON1 = 0xC301;
+    IOCON2 = 0xC301;
+    IOCON3 = 0xC301;
+    
     /* Make sure ADC does not generate interrupt while initializing parameters*/
 	DisableADC1Interrupt();
     
@@ -208,11 +233,13 @@ void ResetParmeters(void)
     uGF.bits.ChangeSpeed = 0;
     /* Change mode */
     uGF.bits.ChangeMode = 1;
-
-    /* Zero out i sums */
-    piInputIq.piState.integrator = 0;
-    piInputId.piState.integrator = 0;
-    piInputOmega.piState.integrator = 0;
+    
+    /* Initialize PI control parameters */
+    InitControlParameters();        
+    /* Initialize estimator parameters */
+    InitEstimParm();
+    /* Initialize flux weakening parameters */
+    InitFWParams();
 
     /* Enable ADC interrupt and begin main loop timing */
     ClearADC1IF();
@@ -310,11 +337,11 @@ void DoControl( void )
             #ifndef BIDIRECTIONAL_SPEED
                 /* read not signed ADC */
                 ReadADC0(ADCBUF_SPEED_REF_A,&readADCParm);
-
-                readADCParm.qAnRef = (readADCParm.qADValue);
-                if(readADCParm.qAnRef > MAXIMUMSPEED_ELECTR)
+                readADCParm.qAnRef = NOMINALSPEED_ELECTR+
+                                    (__builtin_muluu(readADCParm.qADValue,MAXIMUMSPEED_ELECTR-NOMINALSPEED_ELECTR)>>15);   
+                if(readADCParm.qAnRef < ENDSPEED_ELECTR)
                 {
-                    readADCParm.qAnRef = MAXIMUMSPEED_ELECTR;
+                    readADCParm.qAnRef =  ENDSPEED_ELECTR;
                 }
             #else
                 /* unsigned values */
@@ -334,10 +361,12 @@ void DoControl( void )
             #else
                 /* unsigned values */
                 ReadADC0(ADCBUF_SPEED_REF_A,&readADCParm);
+                readADCParm.qAnRef = __builtin_muluu(readADCParm.qADValue,NOMINALSPEED_ELECTR)>>15;  
+                if(readADCParm.qAnRef < ENDSPEED_ELECTR)
+                {
+                   readADCParm.qAnRef =  ENDSPEED_ELECTR;
+                }
             #endif
-            /* ADC values are shifted with 2 */
-            /* Speed pot ref max value +-8190 */
-            readADCParm.qAnRef = readADCParm.qADValue >> 2;
         }
 
         /* Ramp generator to limit the change of the speed reference
@@ -425,7 +454,7 @@ void DoControl( void )
         limit vq maximum to the one resulting from the calculation above */
         temp_qref_pow_q15 = (int16_t)(__builtin_mulss(piOutputId.out ,
                                                       piOutputId.out) >> 15);
-        temp_qref_pow_q15 = Q15(0.98) - temp_qref_pow_q15;
+        temp_qref_pow_q15 = Q15(MAX_VOTLAGE_VECTOR) - temp_qref_pow_q15;
         piInputIq.piState.outMax = Q15SQRT (temp_qref_pow_q15);
 
         /* PI control for Q */
@@ -464,8 +493,6 @@ void DoControl( void )
  */
 void __attribute__((interrupt, no_auto_psv)) _AD1Interrupt(void)
 {
-    /* Clear Interrupt Flag */
-    ClearADC1IF();
 
     if( uGF.bits.RunMotor )
     {
@@ -516,9 +543,12 @@ void __attribute__((interrupt, no_auto_psv)) _AD1Interrupt(void)
         INVERTERA_PWM_PDC1 = pwmDutycycle.dutycycle1;
         INVERTERA_PWM_PDC2 = pwmDutycycle.dutycycle2;
         INVERTERA_PWM_PDC3 = pwmDutycycle.dutycycle3;
+
     }
     DiagnosticsStepIsr();
     BoardServiceStepIsr();
+    /* Clear Interrupt Flag */
+    ClearADC1IF();
 }
 // *****************************************************************************
 /* Function:
@@ -567,7 +597,8 @@ void CalculateParkAngle(void)
             #endif
         }
         /* The angle set depends on startup ramp */
-        thetaElectricalOpenLoop += (int16_t)(motorStartUpData.startupRamp >> 10);
+        thetaElectricalOpenLoop += (int16_t)(motorStartUpData.startupRamp >> 
+                                            STARTUPRAMP_THETA_OPENLOOP_SCALER);
 
     }
     /* Switched to closed loop */
@@ -641,4 +672,19 @@ void InitControlParameters(void)
     piInputOmega.piState.outMin = -piInputOmega.piState.outMax;
     piInputOmega.piState.integrator = 0;
     piOutputOmega.out = 0;
+}
+void __attribute__ ((interrupt, no_auto_psv)) _CNInterrupt(void)
+{
+    if(BSP_LATCH_GATE_DRIVER_A_FAULT == false)
+    {
+        ResetParmeters();
+        LED2 = 1;
+        HAL_Board_Board_FaultClear();
+    }
+    else
+    {
+        LED2 = 0;
+        ResetParmeters();
+    }
+    IFS1bits.CNIF = 0; // Clear CN interrupt
 }

@@ -44,9 +44,7 @@ extern "C" {
 // *****************************************************************************
 // *****************************************************************************
 #include <stdint.h>
-#ifdef __XC16__  // See comments at the top of this header file
-    #include <xc.h>
-#endif // __XC16__
+#include <xc.h>
 
 // *****************************************************************************
 // *****************************************************************************
@@ -115,16 +113,16 @@ controllers, tuning mode will disable the speed PI controller */
 #define MAXIMUM_SPEED_RPM    3500 
 
 /* The following values are given in the xls attached file */
-#define NORM_CURRENT_CONST     0.000121
+#define NORM_CURRENT_CONST     0.000137
 /* normalized ls/dt value */
-#define NORM_LSDTBASE 1460
+#define NORM_LSDTBASE 2078
 /* normalized rs value */
-#define NORM_RS  12990
+#define NORM_RS  15963
 /* the calculation of Rs gives a value exceeding the Q15 range so,
  the normalized value is further divided by 2 to fit the 32768 limit
  this is taken care in the estim.c where the value is implied
  normalized inv kfi at base speed */
-#define NORM_INVKFIBASE  7956
+#define NORM_INVKFIBASE  7890
 /* the calculation of InvKfi gives a value which not exceed the Q15 limit
    to assure that an increase of the term with 5 is possible in the lookup table
    for high flux weakening the normalized is initially divided by 2
@@ -136,7 +134,7 @@ controllers, tuning mode will disable the speed PI controller */
 /* di = i(t1)-i(t2) limitation
  high speed limitation, for dt 50us 
  the value can be taken from attached xls file */
-#define D_ILIMIT_HS 1092
+#define D_ILIMIT_HS 956
 /* low speed limitation, for dt 8*50us */
 #define D_ILIMIT_LS 4369
 
@@ -176,7 +174,7 @@ before the open loop speed ramp up */
 /* Open loop acceleration */
 #define OPENLOOP_RAMPSPEED_INCREASERATE 10
 /* Open loop q current setup - */
-#define Q_CURRENT_REF_OPENLOOP NORM_CURRENT(1.41)
+#define Q_CURRENT_REF_OPENLOOP NORM_CURRENT(1.0)
 
 /* Maximum motor speed converted into electrical speed */
 #define MAXIMUMSPEED_ELECTR MAXIMUM_SPEED_RPM*NOPOLESPAIRS
@@ -195,13 +193,13 @@ minimum value accepted */
 
 /* PI controllers tuning values - */
 /* D Control Loop Coefficients */
-#define D_CURRCNTR_PTERM       Q15(0.02)
+#define D_CURRCNTR_PTERM       Q15(0.01)
 #define D_CURRCNTR_ITERM       Q15(0.002)
 #define D_CURRCNTR_CTERM       Q15(0.999)
 #define D_CURRCNTR_OUTMAX      0x7FFF
 
 /* Q Control Loop Coefficients */
-#define Q_CURRCNTR_PTERM       Q15(0.02)
+#define Q_CURRCNTR_PTERM       Q15(0.01)
 #define Q_CURRCNTR_ITERM       Q15(0.002)
 #define Q_CURRCNTR_CTERM       Q15(0.999)
 #define Q_CURRCNTR_OUTMAX      0x7FFF
