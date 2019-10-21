@@ -31,10 +31,6 @@
       <itemPath>../userparms.h</itemPath>
       <itemPath>../motor_control_noinline.h</itemPath>
       <itemPath>../diagnostics.h</itemPath>
-      <itemPath>../rtdm_hal_adapter.h</itemPath>
-      <itemPath>../rtdm_select_channels.h</itemPath>
-      <itemPath>../rtdm.h</itemPath>
-      <itemPath>../rtdmuser.h</itemPath>
       <itemPath>../lib/x2cscope/X2CScope.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
@@ -58,9 +54,6 @@
       <itemPath>../meascurr.s</itemPath>
       <itemPath>../readadc0.s</itemPath>
       <itemPath>../q15sqrt.s</itemPath>
-      <itemPath>../diagnostics_rtdm.c</itemPath>
-      <itemPath>../rtdm_select_channels.c</itemPath>
-      <itemPath>../rtdm.c</itemPath>
       <itemPath>../diagnostics_x2cscope.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
@@ -112,18 +105,6 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
-      <item path="../diagnostics_rtdm.c" ex="true" overriding="false">
-        <C30>
-        </C30>
-        <C30-AR>
-        </C30-AR>
-        <C30-AS>
-        </C30-AS>
-        <C30-LD>
-        </C30-LD>
-        <C30Global>
-        </C30Global>
-      </item>
       <item path="../diagnostics_x2cscope.c" ex="false" overriding="false">
         <C30>
         </C30>
@@ -137,54 +118,6 @@
         </C30Global>
       </item>
       <item path="../lib/x2cscope/X2CScope.h" ex="false" overriding="false">
-        <C30>
-        </C30>
-        <C30-AR>
-        </C30-AR>
-        <C30-AS>
-        </C30-AS>
-        <C30-LD>
-        </C30-LD>
-        <C30Global>
-        </C30Global>
-      </item>
-      <item path="../rtdm.h" ex="true" overriding="false">
-        <C30>
-        </C30>
-        <C30-AR>
-        </C30-AR>
-        <C30-AS>
-        </C30-AS>
-        <C30-LD>
-        </C30-LD>
-        <C30Global>
-        </C30Global>
-      </item>
-      <item path="../rtdm_hal_adapter.h" ex="true" overriding="false">
-        <C30>
-        </C30>
-        <C30-AR>
-        </C30-AR>
-        <C30-AS>
-        </C30-AS>
-        <C30-LD>
-        </C30-LD>
-        <C30Global>
-        </C30Global>
-      </item>
-      <item path="../rtdm_select_channels.h" ex="true" overriding="false">
-        <C30>
-        </C30>
-        <C30-AR>
-        </C30-AR>
-        <C30-AS>
-        </C30-AS>
-        <C30-LD>
-        </C30-LD>
-        <C30Global>
-        </C30Global>
-      </item>
-      <item path="../rtdmuser.h" ex="true" overriding="false">
         <C30>
         </C30>
         <C30-AR>

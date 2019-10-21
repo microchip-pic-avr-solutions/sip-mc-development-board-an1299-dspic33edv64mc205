@@ -417,6 +417,7 @@ void DoControl( void )
             /* Just changed from open loop */
             uGF.bits.ChangeMode = 0;
             piInputOmega.piState.integrator = (int32_t)ctrlParm.qVqRef << 13;
+            ctrlParm.qVelRef = ENDSPEED_ELECTR;
         }
 
         /* If TORQUE MODE skip the speed controller */
