@@ -90,6 +90,8 @@ typedef struct
     PWM ISR cycles (i.e. BOARD_SERVICE_TICK_COUNT = 1 milli Second / PWM period)*/
 #define BOARD_SERVICE_TICK_COUNT   20
 
+extern void DisablePWMOutputsInverterA(void);
+extern void EnablePWMOutputsInverterA(void);
 extern void BoardServiceInit(void);
 extern void BoardServiceStepIsr(void);
 extern void BoardService(void);

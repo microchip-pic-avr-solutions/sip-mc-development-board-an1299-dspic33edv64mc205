@@ -79,17 +79,19 @@ MC_PIPARMOUT_T piOutputId;
 MC_PIPARMIN_T piInputOmega;
 MC_PIPARMOUT_T piOutputOmega;
    
+volatile uint16_t measCurrOffsetFlag = 0;
 /** Definitions */
 /* Open loop angle scaling Constant - This corresponds to 1024(2^10)
    Scaling down motorStartUpData.startupRamp to thetaElectricalOpenLoop   */
 #define STARTUPRAMP_THETA_OPENLOOP_SCALER       10 
 /** Define max voltage vector */
-#define MAX_VOTLAGE_VECTOR                      0.92
+#define MAX_VOLTAGE_VECTOR                      0.98
 
 void InitControlParameters(void);
 void DoControl(void);
 void CalculateParkAngle(void);
 void ResetParmeters(void);
+void MeasCurrOffset(int16_t *,int16_t *);
 
 // *****************************************************************************
 /* Function:
@@ -118,13 +120,12 @@ void ResetParmeters(void);
 int main ( void )
 {
     InitOscillator();
-
     SetupGPIOPorts();
     DiagnosticsInit();
     /* Initialize Peripherals */
     InitPeripherals();
-    /* Initializing Current offsets in structure variable */
-    InitMeasCompCurr(adcOffset.ch1,adcOffset.ch3, &measCurrParm);
+    MeasCurrOffset(&measCurrParm.Offseta,&measCurrParm.Offsetb);
+    DiagnosticsInit();
     
     BoardServiceInit();
     CORCONbits.SATA = 0;
@@ -165,9 +166,7 @@ int main ( void )
                 }
                 else
                 {
-                    IOCON1 = 0xC001;
-                    IOCON2 = 0xC001;
-                    IOCON3 = 0xC001;
+                    EnablePWMOutputsInverterA();
                     uGF.bits.RunMotor = 1;
                 }
 
@@ -211,18 +210,15 @@ int main ( void )
  */
 void ResetParmeters(void)
 {
-    IOCON1 = 0xC301;
-    IOCON2 = 0xC301;
-    IOCON3 = 0xC301;
-    
     /* Make sure ADC does not generate interrupt while initializing parameters*/
-	DisableADC1Interrupt();
+	DisableADCInterrupt();
     
     /* Re initialize the duty cycle to minimum value */
     INVERTERA_PWM_PDC1 = MIN_DUTY;
     INVERTERA_PWM_PDC2 = MIN_DUTY;
     INVERTERA_PWM_PDC3 = MIN_DUTY;
-	
+    DisablePWMOutputsInverterA();
+    
     /* Stop the motor   */
     uGF.bits.RunMotor = 0;        
     /* Set the reference speed value to 0 */
@@ -242,8 +238,8 @@ void ResetParmeters(void)
     InitFWParams();
 
     /* Enable ADC interrupt and begin main loop timing */
-    ClearADC1IF();
-    EnableADC1Interrupt();
+    ClearADCIF();
+    EnableADCInterrupt();
 }
 // *****************************************************************************
 /* Function:
@@ -333,64 +329,59 @@ void DoControl( void )
         /* if change speed indication, double the speed */
         if(uGF.bits.ChangeSpeed)
         {
-            /* if Bidirectional functioning, disable speed doubling */
-            #ifndef BIDIRECTIONAL_SPEED
+            
                 /* read not signed ADC */
                 ReadADC0(ADCBUF_SPEED_REF_A,&readADCParm);
-                readADCParm.qAnRef = NOMINALSPEED_ELECTR+
-                                    (__builtin_muluu(readADCParm.qADValue,MAXIMUMSPEED_ELECTR-NOMINALSPEED_ELECTR)>>15);   
-                if(readADCParm.qAnRef < ENDSPEED_ELECTR)
+
+            readADCParm.qAnRef = (__builtin_muluu(readADCParm.qADValue,
+                    MAXIMUMSPEED_ELECTR-NOMINALSPEED_ELECTR)>>15)+
+                    NOMINALSPEED_ELECTR;  
+            if(readADCParm.qAnRef < ENDSPEED_ELECTR)
                 {
                     readADCParm.qAnRef =  ENDSPEED_ELECTR;
                 }
-            #else
-                /* unsigned values */
-                ReadSignedADC0(ADCBUF_SPEED_REF_A,&readADCParm);
-
-                /* ADC values are shifted with 2 */
-                /* Speed pot ref max value +-8190 */
-                readADCParm.qAnRef = readADCParm.qADValue >> 2;
-            #endif
         }
         else
         {
-            /* if Bidirectional, read pot value signed */
-            #ifdef BIDIRECTIONAL_SPEED
-                /* signed values, different than in case of FW above */
-                ReadSignedADC0(ADCBUF_SPEED_REF_A,&readADCParm);
-            #else
                 /* unsigned values */
                 ReadADC0(ADCBUF_SPEED_REF_A,&readADCParm);
-                readADCParm.qAnRef = __builtin_muluu(readADCParm.qADValue,NOMINALSPEED_ELECTR)>>15;  
-                if(readADCParm.qAnRef < ENDSPEED_ELECTR)
-                {
-                   readADCParm.qAnRef =  ENDSPEED_ELECTR;
-                }
-            #endif
+            readADCParm.qAnRef = (__builtin_muluu(readADCParm.qADValue,
+                    NOMINALSPEED_ELECTR-ENDSPEED_ELECTR)>>15) +
+                    ENDSPEED_ELECTR;  
+            if(readADCParm.qAnRef < ENDSPEED_ELECTR)
+            {
+               readADCParm.qAnRef =  ENDSPEED_ELECTR;
+            }
         }
-
-        /* Ramp generator to limit the change of the speed reference
-          the rate of change is defined by CtrlParm.qRefRamp */
-        ctrlParm.qDiff = ctrlParm.qVelRef - readADCParm.qAnRef;
-        /* Speed Ref Ramp */
-        if (ctrlParm.qDiff < 0)
+        if(ctrlParm.speedRampCount < SPEEDREFRAMP_COUNT)
         {
-            /* Set this cycle reference as the sum of
-            previously calculated one plus the reference ramp value */
-            ctrlParm.qVelRef = ctrlParm.qVelRef+ctrlParm.qRefRamp;
+           ctrlParm.speedRampCount++; 
         }
         else
         {
-            /* Same as above for speed decrease */
-            ctrlParm.qVelRef = ctrlParm.qVelRef-ctrlParm.qRefRamp;
-        }
-        /* If difference less than half of ref ramp, set reference
-        directly from the pot */
-        if (_Q15abs(ctrlParm.qDiff) < (ctrlParm.qRefRamp << 1))
-        {
-            ctrlParm.qVelRef = readADCParm.qAnRef;
-        }
 
+                /* Ramp generator to limit the change of the speed reference
+                  the rate of change is defined by CtrlParm.qRefRamp */
+                ctrlParm.qDiff = ctrlParm.qVelRef - readADCParm.qAnRef;
+                /* Speed Ref Ramp */
+                if (ctrlParm.qDiff < 0)
+                {
+                    /* Set this cycle reference as the sum of
+                    previously calculated one plus the reference ramp value */
+                    ctrlParm.qVelRef = ctrlParm.qVelRef+ctrlParm.qRefRamp;
+                }
+                else
+                {
+                    /* Same as above for speed decrease */
+                    ctrlParm.qVelRef = ctrlParm.qVelRef-ctrlParm.qRefRamp;
+                }
+                /* If difference less than half of ref ramp, set reference
+                directly from the pot */
+                if (_Q15abs(ctrlParm.qDiff) < (ctrlParm.qRefRamp << 1))
+                {
+                    ctrlParm.qVelRef = readADCParm.qAnRef;
+                }
+        }    
         /* Tuning is generating a software ramp
         with sufficiently slow ramp defined by 
         TUNING_DELAY_RAMPUP constant */
@@ -455,7 +446,7 @@ void DoControl( void )
         limit vq maximum to the one resulting from the calculation above */
         temp_qref_pow_q15 = (int16_t)(__builtin_mulss(piOutputId.out ,
                                                       piOutputId.out) >> 15);
-        temp_qref_pow_q15 = Q15(MAX_VOTLAGE_VECTOR) - temp_qref_pow_q15;
+        temp_qref_pow_q15 = Q15(MAX_VOLTAGE_VECTOR) - temp_qref_pow_q15;
         piInputIq.piState.outMax = Q15SQRT (temp_qref_pow_q15);
 
         /* PI control for Q */
@@ -471,9 +462,9 @@ void DoControl( void )
 }
 // *****************************************************************************
 /* Function:
-    ADC1Interrupt()
+    ADCInterrupt()
   Summary:
-    ADC1Interrupt() ISR routine
+    ADCInterrupt() ISR routine
 
   Description:
     Does speed calculation and executes the vector update loop
@@ -492,9 +483,9 @@ void DoControl( void )
   Remarks:
     None.
  */
-void __attribute__((interrupt, no_auto_psv)) _AD1Interrupt(void)
+void __attribute__((interrupt, no_auto_psv)) _ADCInterrupt(void)
 {
-
+    
     if( uGF.bits.RunMotor )
     {
         /* Calculate qIa,qIb */
@@ -546,10 +537,17 @@ void __attribute__((interrupt, no_auto_psv)) _AD1Interrupt(void)
         INVERTERA_PWM_PDC3 = pwmDutycycle.dutycycle3;
 
     }
+    else
+    {
+        INVERTERA_PWM_PDC3 = MIN_DUTY;
+        INVERTERA_PWM_PDC2 = MIN_DUTY;
+        INVERTERA_PWM_PDC1 = MIN_DUTY;
+        measCurrOffsetFlag = 1;
+    }
     DiagnosticsStepIsr();
     BoardServiceStepIsr();
     /* Clear Interrupt Flag */
-    ClearADC1IF();
+    ClearADCIF();
 }
 // *****************************************************************************
 /* Function:
@@ -643,7 +641,7 @@ void InitControlParameters(void)
     measCurrParm.qKb = KCURRB;
     
     ctrlParm.qRefRamp = SPEEDREFRAMP;
-    
+    ctrlParm.speedRampCount = SPEEDREFRAMP_COUNT;
     /* Set PWM period to Loop Time */
     pwmPeriod = LOOPTIME_TCY;
  
@@ -687,5 +685,33 @@ void __attribute__ ((interrupt, no_auto_psv)) _CNInterrupt(void)
         LED2 = 0;
         ResetParmeters();
     }
-    IFS1bits.CNIF = 0; // Clear CN interrupt
+    ClearCNIF(); // Clear CN interrupt
+}
+void MeasCurrOffset(int16_t *pOffseta,int16_t *pOffsetb)
+{    
+    int32_t adcOffsetIa = 0, adcOffsetIb = 0;
+    uint16_t i = 0;
+                
+    /* Enable ADC interrupt and begin main loop timing */
+    ClearADCIF();
+    EnableADCInterrupt();
+    
+    /* Taking multiple sample to measure voltage offset in all the channels */
+    for (i = 0; i < (1<<CURRENT_OFFSET_SAMPLE_SCALER); i++)
+    {
+        measCurrOffsetFlag = 0;
+        /* Wait for the conversion to complete */
+        while (measCurrOffsetFlag == 1);
+        /* Sum up the converted results */
+        adcOffsetIa += ADCBUF_INV_A_IPHASE1;
+        adcOffsetIb += ADCBUF_INV_A_IPHASE2;
+    }
+    /* Averaging to find current Ia offset */
+    *pOffseta = (int16_t)(adcOffsetIa >> CURRENT_OFFSET_SAMPLE_SCALER);
+    /* Averaging to find current Ib offset*/
+    *pOffsetb = (int16_t)(adcOffsetIb >> CURRENT_OFFSET_SAMPLE_SCALER);
+    measCurrOffsetFlag = 0;
+    
+    /* Make sure ADC does not generate interrupt while initializing parameters*/
+    DisableADCInterrupt();
 }

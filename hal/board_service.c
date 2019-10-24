@@ -160,3 +160,16 @@ void ButtonGroupInitialize(void)
     buttonSpeedHalfDouble.debounceCount = 0;
     buttonSpeedHalfDouble.state = false;
 }
+
+void EnablePWMOutputsInverterA(void)
+{
+    IOCON1 = 0xC001;
+    IOCON2 = 0xC001;
+    IOCON3 = 0xC001;
+}
+void DisablePWMOutputsInverterA(void)
+{
+    IOCON1 = 0xC301;
+    IOCON2 = 0xC301;
+    IOCON3 = 0xC301;
+}

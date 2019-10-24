@@ -124,10 +124,16 @@
 // Subtraction by 1 is ignored as Min TAD cycle has to be met
 #define ADC_MIN_ADCS_COUNTS     (uint8_t)((ADC_MIN_TAD_MICROSEC * FCY_MHZ))
 
-#define EnableADC1Interrupt()   IEC0bits.AD1IE = 1
-#define DisableADC1Interrupt()  IEC0bits.AD1IE = 0
-#define ClearADC1IF()           IFS0bits.AD1IF = 0
-
+#define EnableADCInterrupt()   IEC0bits.AD1IE = 1
+#define DisableADCInterrupt()  IEC0bits.AD1IE = 0
+#define ClearADCIF()           IFS0bits.AD1IF = 0
+#define _ADCInterrupt _AD1Interrupt        
+        
+/* This defines number of current offset samples for averaging 
+ * If the 2^n samples are considered specify n(in this case 2^7(= 128)=> 7*/
+#define  CURRENT_OFFSET_SAMPLE_SCALER         7 
+// Clear CN interrupt         
+#define ClearCNIF() IFS1bits.CNIF = 0       
 // *****************************************************************************
 // *****************************************************************************
 // Section: Data Types

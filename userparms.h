@@ -59,12 +59,6 @@ extern "C" {
 #define DEADTIME_MICROSEC       1
 /* Specify PWM Period in seconds, (1/ PWMFREQUENCY_HZ) */
 #define LOOPTIME_SEC            0.00005
-/* Bidirectional functioning 
-For DEMO purpose, a special definition enables bidirectional functioning 
- Activating the macro below, a speed reverse will be possible 
- turning the potentiometer across the median point 
- In this mode the speed doubling is no longer possible */
-#undef BIDIRECTIONAL_SPEED
 
 /* Definition for tuning - if active the speed reference is a ramp with a 
 constant slope. The slope is determined by TUNING_DELAY_RAMPUP constant.
@@ -190,6 +184,8 @@ before the open loop speed ramp up */
 is needed for assuring the motor can follow the reference imposed /
 minimum value accepted */
 #define SPEEDREFRAMP   Q15(0.00003)  
+/* The Speed Control Loop Executes every  SPEEDREFRAMP_COUNT */
+#define SPEEDREFRAMP_COUNT   3  
 
 /* PI controllers tuning values - */
 /* D Control Loop Coefficients */
