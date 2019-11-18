@@ -150,7 +150,7 @@ int main ( void )
         {
             DiagnosticsStepMain();
             BoardService();
-            if(uGF.bits.RunMotor == 0)
+            if (uGF.bits.RunMotor == 0)
             {
                 LED1 = 1;
             }
@@ -158,9 +158,9 @@ int main ( void )
             {
                 LED1 = 0;
             }
-            if(IsPressed_Button1())
+            if (IsPressed_Button1())
             {
-                if(uGF.bits.RunMotor == 1)
+                if (uGF.bits.RunMotor == 1)
                 {
                     ResetParmeters();
                 }
@@ -171,9 +171,9 @@ int main ( void )
                 }
 
             }
-            if(IsPressed_Button2())
+            if (IsPressed_Button2())
             {
-                if((uGF.bits.RunMotor == 1) && (uGF.bits.OpenLoop == 0))
+                if ((uGF.bits.RunMotor == 1) && (uGF.bits.OpenLoop == 0))
                 {
                     uGF.bits.ChangeSpeed = !uGF.bits.ChangeSpeed;
                 }
@@ -276,10 +276,10 @@ void DoControl( void )
         motorStartUpData.tuningDelayRampup;   
     #endif
 
-    if(uGF.bits.OpenLoop)
+    if (uGF.bits.OpenLoop)
     {
         /* OPENLOOP:  force rotating angle,Vd and Vq */
-        if(uGF.bits.ChangeMode)
+        if (uGF.bits.ChangeMode)
         {
             /* Just changed to open loop */
             uGF.bits.ChangeMode = 0;
@@ -327,7 +327,7 @@ void DoControl( void )
     /* Closed Loop Vector Control */
     {
         /* if change speed indication, double the speed */
-        if(uGF.bits.ChangeSpeed)
+        if (uGF.bits.ChangeSpeed)
         {
             
                 /* read not signed ADC */
@@ -336,7 +336,7 @@ void DoControl( void )
             readADCParm.qAnRef = (__builtin_muluu(readADCParm.qADValue,
                     MAXIMUMSPEED_ELECTR-NOMINALSPEED_ELECTR)>>15)+
                     NOMINALSPEED_ELECTR;  
-            if(readADCParm.qAnRef < ENDSPEED_ELECTR)
+            if (readADCParm.qAnRef < ENDSPEED_ELECTR)
                 {
                     readADCParm.qAnRef =  ENDSPEED_ELECTR;
                 }
@@ -348,12 +348,12 @@ void DoControl( void )
             readADCParm.qAnRef = (__builtin_muluu(readADCParm.qADValue,
                     NOMINALSPEED_ELECTR-ENDSPEED_ELECTR)>>15) +
                     ENDSPEED_ELECTR;  
-            if(readADCParm.qAnRef < ENDSPEED_ELECTR)
+            if (readADCParm.qAnRef < ENDSPEED_ELECTR)
             {
                readADCParm.qAnRef =  ENDSPEED_ELECTR;
             }
         }
-        if(ctrlParm.speedRampCount < SPEEDREFRAMP_COUNT)
+        if (ctrlParm.speedRampCount < SPEEDREFRAMP_COUNT)
         {
            ctrlParm.speedRampCount++; 
         }
@@ -387,12 +387,12 @@ void DoControl( void )
         TUNING_DELAY_RAMPUP constant */
         #ifdef TUNING
             /* if delay is not completed */
-            if(motorStartUpData.tuningDelayRampup > TUNING_DELAY_RAMPUP)
+            if (motorStartUpData.tuningDelayRampup > TUNING_DELAY_RAMPUP)
             {
                 motorStartUpData.tuningDelayRampup = 0;
             }
             /* While speed less than maximum and delay is complete */
-            if((motorStartUpData.tuningAddRampup < (MAXIMUMSPEED_ELECTR - ENDSPEED_ELECTR)) &&
+            if ((motorStartUpData.tuningAddRampup < (MAXIMUMSPEED_ELECTR - ENDSPEED_ELECTR)) &&
                                                   (motorStartUpData.tuningDelayRampup == 0) )
             {
                 /* Increment ramp add */
@@ -403,7 +403,7 @@ void DoControl( void )
             ctrlParm.qVelRef = ENDSPEED_ELECTR +  motorStartUpData.tuningAddRampup;
         #endif
 
-        if( uGF.bits.ChangeMode )
+        if (uGF.bits.ChangeMode)
         {
             /* Just changed from open loop */
             uGF.bits.ChangeMode = 0;
@@ -486,7 +486,7 @@ void DoControl( void )
 void __attribute__((interrupt, no_auto_psv)) _ADCInterrupt(void)
 {
     
-    if( uGF.bits.RunMotor )
+    if (uGF.bits.RunMotor)
     {
         /* Calculate qIa,qIb */
         MeasCompCurr(ADCBUF_INV_A_IPHASE1, ADCBUF_INV_A_IPHASE2,&measCurrParm);
@@ -503,7 +503,7 @@ void __attribute__((interrupt, no_auto_psv)) _ADCInterrupt(void)
         /* Calculate qAngle */
         CalculateParkAngle();
         /* if open loop */
-        if(uGF.bits.OpenLoop == 1)
+        if (uGF.bits.OpenLoop == 1)
         {
             /* the angle is given by park parameter */
             thetaElectrical = thetaElectricalOpenLoop;
@@ -520,15 +520,15 @@ void __attribute__((interrupt, no_auto_psv)) _ADCInterrupt(void)
         MC_CalculateSpaceVectorPhaseShifted_Assembly(&vabc,pwmPeriod,
                                                     &pwmDutycycle);
 
-        if(pwmDutycycle.dutycycle1 < MIN_DUTY)
+        if (pwmDutycycle.dutycycle1 < MIN_DUTY)
         {
             pwmDutycycle.dutycycle1 = MIN_DUTY;
         }
-        if(pwmDutycycle.dutycycle2 < MIN_DUTY)
+        if (pwmDutycycle.dutycycle2 < MIN_DUTY)
         {
             pwmDutycycle.dutycycle2 = MIN_DUTY;
         }
-        if(pwmDutycycle.dutycycle3 < MIN_DUTY)
+        if (pwmDutycycle.dutycycle3 < MIN_DUTY)
         {
             pwmDutycycle.dutycycle3 = MIN_DUTY;
         }
@@ -575,7 +575,7 @@ void __attribute__((interrupt, no_auto_psv)) _ADCInterrupt(void)
 void CalculateParkAngle(void)
 {
     /* if open loop */
-    if(uGF.bits.OpenLoop)
+    if (uGF.bits.OpenLoop)
     {
         /* begin with the lock sequence, for field alignment */
         if (motorStartUpData.startupLock < LOCK_TIME)
@@ -604,7 +604,7 @@ void CalculateParkAngle(void)
     else 
     {
         /* In closed loop slowly decrease the offset add to the estimated angle */
-        if(estimator.qRhoOffset > 0)
+        if (estimator.qRhoOffset > 0)
         {
             estimator.qRhoOffset--;
         }
@@ -674,7 +674,7 @@ void InitControlParameters(void)
 }
 void __attribute__ ((interrupt, no_auto_psv)) _CNInterrupt(void)
 {
-    if(BSP_LATCH_GATE_DRIVER_A_FAULT == false)
+    if (BSP_LATCH_GATE_DRIVER_A_FAULT == false)
     {
         ResetParmeters();
         LED2 = 1;

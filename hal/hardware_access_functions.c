@@ -44,7 +44,7 @@
 *******************************************************************************/
 #include <string.h>
 #include <stdbool.h>
-#include <p33EDV64MC205.h>
+#include <xc.h>
 #include "hardware_access_functions.h"
 static bool HAL_GateDriver_Initialize(GATE_DRIVER_OBJ *);
 static void HAL_GateDriver_Enable(GATE_DRIVER_OBJ *);
@@ -108,14 +108,14 @@ GATE_DRIVER_HANDLER_STATE HAL_GateDriver_Configure(GATE_DRIVER_OBJ *pGateDriver,
 {    
     /* Waits for  Gate Driver Scheduler Timeout,if activated ; 
      * This allows wait states between different events */
-    if(HAL_GateDriver_SchedulerRun(&pGateDriver->timeout) == true)
+    if (HAL_GateDriver_SchedulerRun(&pGateDriver->timeout) == true)
     {
 
         switch(pGateDriver->configState)
         {
             case GATE_DRIVER_CONFIG_UNINITIALISED:
                 pGateDriver->gateDriverID = gateDriverID;
-                if(HAL_GateDriver_Initialize(pGateDriver))
+                if (HAL_GateDriver_Initialize(pGateDriver))
                 {
                     pGateDriver->configState = GATE_DRIVER_CONFIG_DISABLED;
                 }
@@ -133,7 +133,7 @@ GATE_DRIVER_HANDLER_STATE HAL_GateDriver_Configure(GATE_DRIVER_OBJ *pGateDriver,
                 pGateDriver->configState = GATE_DRIVER_CONFIG_CONNECTED;
             break;
             case GATE_DRIVER_CONFIG_TRYAGAIN:
-                if(pGateDriver->tryAgainCount < GATE_DRIVER_TRYCOUNT_MAX)
+                if (pGateDriver->tryAgainCount < GATE_DRIVER_TRYCOUNT_MAX)
                 {
                     pGateDriver->tryAgainCount++;
                     HAL_GateDriver_Disable(pGateDriver);
@@ -148,7 +148,7 @@ GATE_DRIVER_HANDLER_STATE HAL_GateDriver_Configure(GATE_DRIVER_OBJ *pGateDriver,
             break;
             case GATE_DRIVER_CONFIG_CONNECTED:
                 pGateDriver->configState = HAL_GateDriver_Install(pGateDriver);
-                if(pGateDriver->configState==GATE_DRIVER_CONFIG_INSTALLED)
+                if (pGateDriver->configState==GATE_DRIVER_CONFIG_INSTALLED)
                 {
                     pGateDriver->activeState = GATE_DRIVER_OP_READY;
                     pGateDriver->tryAgainCount = 0;
@@ -188,15 +188,15 @@ GATE_DRIVER_HANDLER_STATE HAL_GateDriver_Status(GATE_DRIVER_OBJ *pGateDriver)
 {    
     /* Waits for  Gate Driver Scheduler Timeout,if activated ; 
      * This allows wait states between different events */
-    if((HAL_GateDriver_SchedulerRun(&pGateDriver->timeout) == true))
+    if ((HAL_GateDriver_SchedulerRun(&pGateDriver->timeout) == true))
     {
 
         /* If Gate Driver internal Operation state anything other than 
          * GATE_DRIVER_OP_NOT_READY ,GATE_DRIVER_OP_TRYAGAIN,
          * Gate Driver operation status can be requested */
-        if(pGateDriver->activeState == GATE_DRIVER_OP_TRYAGAIN)
+        if (pGateDriver->activeState == GATE_DRIVER_OP_TRYAGAIN)
         {
-            if(pGateDriver->tryAgainCount < GATE_DRIVER_TRYCOUNT_MAX)
+            if (pGateDriver->tryAgainCount < GATE_DRIVER_TRYCOUNT_MAX)
             {
                 pGateDriver->tryAgainCount++;
                 pGateDriver->statusRegIndex = 0;
@@ -209,7 +209,7 @@ GATE_DRIVER_HANDLER_STATE HAL_GateDriver_Status(GATE_DRIVER_OBJ *pGateDriver)
                 pGateDriver->activeState = GATE_DRIVER_OP_ERROR;
             }
         }
-        else if(pGateDriver->activeState != GATE_DRIVER_OP_NOT_READY)
+        else if (pGateDriver->activeState != GATE_DRIVER_OP_NOT_READY)
         {
             /* Call the Gate Driver read Status Function */
             pGateDriver->activeState = HAL_GateDriver_ReadStatus(pGateDriver);
@@ -351,22 +351,22 @@ GATE_DRIVER_CONFIG_STATE HAL_GateDriver_Install(GATE_DRIVER_OBJ* pGateDriver)
             ackData[2] = HAL_GateDriver_Read(pGateDriver->pHostInterface);
             ackData[3] = HAL_GateDriver_Read(pGateDriver->pHostInterface);
             pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG2;
-            if(ackData[0] != GATE_DRIVER_CMD_SET_CFG0)
+            if (ackData[0] != GATE_DRIVER_CMD_SET_CFG0)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN;
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             }
-            if(ackData[1] != pGateDriver->cmd0Data.byte)
+            if (ackData[1] != pGateDriver->cmd0Data.byte)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN; 
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             }
-            if(ackData[2] != GATE_DRIVER_ACK_SET_CFG0)
+            if (ackData[2] != GATE_DRIVER_ACK_SET_CFG0)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN;
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             }
-            if(ackData[3] != pGateDriver->cmd0Data.byte)
+            if (ackData[3] != pGateDriver->cmd0Data.byte)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN;
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
@@ -393,22 +393,22 @@ GATE_DRIVER_CONFIG_STATE HAL_GateDriver_Install(GATE_DRIVER_OBJ* pGateDriver)
             ackData[3] = HAL_GateDriver_Read(pGateDriver->pHostInterface);
             pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             state = GATE_DRIVER_CONFIG_INSTALLED;
-            if(ackData[0] != GATE_DRIVER_CMD_SET_CFG2)
+            if (ackData[0] != GATE_DRIVER_CMD_SET_CFG2)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN;
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             }
-            if(ackData[1] != pGateDriver->cmd2Data.byte)
+            if (ackData[1] != pGateDriver->cmd2Data.byte)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN; 
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             }
-            if(ackData[2] != GATE_DRIVER_ACK_SET_CFG2)
+            if (ackData[2] != GATE_DRIVER_ACK_SET_CFG2)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN;
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             }
-            if(ackData[3] != pGateDriver->cmd2Data.byte)
+            if (ackData[3] != pGateDriver->cmd2Data.byte)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN;
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
@@ -455,12 +455,12 @@ GATE_DRIVER_OPERATION_STATE HAL_GateDriver_ReadStatus(GATE_DRIVER_OBJ* pGateDriv
             ackData[1] = HAL_GateDriver_Read(pGateDriver->pHostInterface);
             ackData[2] = HAL_GateDriver_Read(pGateDriver->pHostInterface);
             pGateDriver->statusRegIndex = GATE_DRIVER_STATE_CMD_READ_STATUS1;
-            if(ackData[0] != GATE_DRIVER_CMD_GET_STATUS0)
+            if (ackData[0] != GATE_DRIVER_CMD_GET_STATUS0)
             {
                 state = GATE_DRIVER_OP_TRYAGAIN;
                 pGateDriver->statusRegIndex = GATE_DRIVER_STATE_CMD_READ_STATUS0;
             }
-            if(ackData[1] != GATE_DRIVER_ACK_GET_STATUS0)
+            if (ackData[1] != GATE_DRIVER_ACK_GET_STATUS0)
             {
                 state = GATE_DRIVER_OP_TRYAGAIN; 
                 pGateDriver->statusRegIndex = GATE_DRIVER_STATE_CMD_READ_STATUS0;
@@ -485,12 +485,12 @@ GATE_DRIVER_OPERATION_STATE HAL_GateDriver_ReadStatus(GATE_DRIVER_OBJ* pGateDriv
             ackData[1] = HAL_GateDriver_Read(pGateDriver->pHostInterface);
             ackData[2] = HAL_GateDriver_Read(pGateDriver->pHostInterface);
             pGateDriver->statusRegIndex = GATE_DRIVER_STATE_CMD_READ_STATUS0;
-            if(ackData[0] != GATE_DRIVER_CMD_GET_STATUS1)
+            if (ackData[0] != GATE_DRIVER_CMD_GET_STATUS1)
             {
                 state = GATE_DRIVER_OP_TRYAGAIN;
                 pGateDriver->statusRegIndex = GATE_DRIVER_STATE_CMD_READ_STATUS0;
             }
-            if(ackData[1] != GATE_DRIVER_ACK_GET_STATUS1)
+            if (ackData[1] != GATE_DRIVER_ACK_GET_STATUS1)
             {
                 state = GATE_DRIVER_OP_TRYAGAIN;
                 pGateDriver->statusRegIndex = GATE_DRIVER_STATE_CMD_READ_STATUS0;
@@ -498,18 +498,18 @@ GATE_DRIVER_OPERATION_STATE HAL_GateDriver_ReadStatus(GATE_DRIVER_OBJ* pGateDriv
             pGateDriver->status1Data.byte = (uint8_t)ackData[2];
             
             state = GATE_DRIVER_OP_DONE;
-            if(pGateDriver->status0Data.byte)
+            if (pGateDriver->status0Data.byte)
             {
                 state = GATE_DRIVER_OP_ERROR;
                 pGateDriver->statusRegIndex = GATE_DRIVER_STATE_CMD_READ_STATUS0;
             }
-            if(pGateDriver->status1Data.byte > GATE_DRIVER_STATUS1_ERRATA_MASK)
+            if (pGateDriver->status1Data.byte > GATE_DRIVER_STATUS1_ERRATA_MASK)
             {
                 state = GATE_DRIVER_OP_ERROR;
                 pGateDriver->statusRegIndex = GATE_DRIVER_STATE_CMD_READ_STATUS0;
             }
             pGateDriver->timeout = GATEDRIVER_STATUS_READ_INTERVAL;
-            if(state == GATE_DRIVER_OP_DONE)
+            if (state == GATE_DRIVER_OP_DONE)
             {
                 pGateDriver->tryAgainCount = 0;
             }
@@ -534,7 +534,7 @@ GATE_DRIVER_OPERATION_STATE HAL_GateDriver_ReadStatus(GATE_DRIVER_OBJ* pGateDriv
  */
 void HAL_GateDriver_Write(GATE_DRIVER_HOST_INTERFACE* pHostInterface,uint16_t data)
 { 
-    if(pHostInterface->StatusBufferFullTransmitGet() == 0)
+    if (pHostInterface->StatusBufferFullTransmitGet() == 0)
     {
         pHostInterface->DataWrite(data);
     }
@@ -554,7 +554,7 @@ uint16_t HAL_GateDriver_Read(GATE_DRIVER_HOST_INTERFACE* pHostInterface)
 { 
     /** Function returns invalid data,if buffer is empty*/
     uint16_t data = GATE_DRIVER_INVALID_DATA;
-    if(pHostInterface->IsReceiveBufferDataReady())
+    if (pHostInterface->IsReceiveBufferDataReady())
     {
         data = pHostInterface->DataRead();
     }
@@ -572,7 +572,7 @@ uint16_t HAL_GateDriver_Read(GATE_DRIVER_HOST_INTERFACE* pHostInterface)
  */
 static bool HAL_GateDriver_SchedulerRun(uint16_t *pTimeout) 
 { 
-    if(*pTimeout == 0)
+    if (*pTimeout == 0)
     {
         return true;
     }
@@ -618,7 +618,7 @@ static bool HAL_GateDriver_Initialize_CommChannel(GATE_DRIVER_OBJ *pGateDriver)
  */
 static bool HAL_GateDriver_HookUARTFunctions(GATE_DRIVER_HOST_INTERFACE *pHostInterface,uint16_t interfaceChannelID)
 {
-    if(interfaceChannelID == BSP_GATE_DRIVER_INTERFACE_A_UARTMODULE)
+    if (interfaceChannelID == BSP_GATE_DRIVER_INTERFACE_A_UARTMODULE)
     {
         /* Initialize function pointer based on the communication module number.*/
         pHostInterface->InterruptTransmitFlagClear = 

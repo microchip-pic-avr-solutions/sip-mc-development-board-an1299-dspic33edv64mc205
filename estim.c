@@ -93,7 +93,7 @@ void Estim(void)
         {
             estimator.qDIalpha = estimator.qDIlimitLS;
         }
-        if (estimator.qDIalpha<-estimator.qDIlimitLS) 
+        if (estimator.qDIalpha < -estimator.qDIlimitLS) 
         {
             estimator.qDIalpha = -estimator.qDIlimitLS;
         }
@@ -108,7 +108,7 @@ void Estim(void)
         {
             estimator.qDIbeta = estimator.qDIlimitLS;
         }
-        if (estimator.qDIbeta<-estimator.qDIlimitLS) 
+        if (estimator.qDIbeta < -estimator.qDIlimitLS) 
         {
             estimator.qDIbeta = -estimator.qDIlimitLS;
         }
@@ -128,7 +128,7 @@ void Estim(void)
         {
             estimator.qDIalpha = estimator.qDIlimitHS;
         }
-        if (estimator.qDIalpha<-estimator.qDIlimitHS) 
+        if (estimator.qDIalpha < -estimator.qDIlimitHS) 
         {
             estimator.qDIalpha = -estimator.qDIlimitHS;
         }
@@ -145,7 +145,7 @@ void Estim(void)
         {
             estimator.qDIbeta = estimator.qDIlimitHS;
         }
-        if (estimator.qDIbeta<-estimator.qDIlimitHS) 
+        if (estimator.qDIbeta < -estimator.qDIlimitHS) 
         {
             estimator.qDIbeta = -estimator.qDIlimitHS;
         }

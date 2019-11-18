@@ -41,7 +41,9 @@ extern "C" {
 
 #include <stdint.h>
 
-#define Q15(Float_Value) (int16_t)(32768 * (Float_Value) + 0.5)
+#define Q15(Float_Value)	\
+((Float_Value < 0.0) ? (int16_t)(32768 * (Float_Value) - 0.5) \
+: (int16_t)(32767 * (Float_Value) + 0.5))
 
 int16_t Q15SQRT(int16_t );
 

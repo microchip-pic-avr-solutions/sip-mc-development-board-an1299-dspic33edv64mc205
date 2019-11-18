@@ -56,7 +56,7 @@ static void ButtonScan(BUTTON_T * ,bool);
 
 bool IsPressed_Button1(void)
 {
-    if(buttonStartStop.status)
+    if (buttonStartStop.status)
     {
         buttonStartStop.status = false;
         return true;
@@ -68,7 +68,7 @@ bool IsPressed_Button1(void)
 }
 bool IsPressed_Button2(void)
 {
-    if(buttonSpeedHalfDouble.status)
+    if (buttonSpeedHalfDouble.status)
     {
         buttonSpeedHalfDouble.status = false;
         return true;
@@ -99,14 +99,14 @@ void BoardService(void)
         {
             case SYSTEM_INITIALIZATION: 
                 runtimeState = HAL_Board_Configure();
-                if(runtimeState == BOARD_READY)
+                if (runtimeState == BOARD_READY)
                 {
                     systemState = SYSTEM_READY;
                 }
             break;
             case SYSTEM_READY:
                 runtimeState = HAL_Board_Service();
-                if(runtimeState == BOARD_ERROR)
+                if (runtimeState == BOARD_ERROR)
                 {
                 }
                 else
