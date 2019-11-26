@@ -360,27 +360,28 @@ void DoControl( void )
         else
         {
 
-                /* Ramp generator to limit the change of the speed reference
-                  the rate of change is defined by CtrlParm.qRefRamp */
-                ctrlParm.qDiff = ctrlParm.qVelRef - readADCParm.qAnRef;
-                /* Speed Ref Ramp */
-                if (ctrlParm.qDiff < 0)
-                {
-                    /* Set this cycle reference as the sum of
-                    previously calculated one plus the reference ramp value */
-                    ctrlParm.qVelRef = ctrlParm.qVelRef+ctrlParm.qRefRamp;
-                }
-                else
-                {
-                    /* Same as above for speed decrease */
-                    ctrlParm.qVelRef = ctrlParm.qVelRef-ctrlParm.qRefRamp;
-                }
-                /* If difference less than half of ref ramp, set reference
-                directly from the pot */
-                if (_Q15abs(ctrlParm.qDiff) < (ctrlParm.qRefRamp << 1))
-                {
-                    ctrlParm.qVelRef = readADCParm.qAnRef;
-                }
+            /* Ramp generator to limit the change of the speed reference
+              the rate of change is defined by CtrlParm.qRefRamp */
+            ctrlParm.qDiff = ctrlParm.qVelRef - readADCParm.qAnRef;
+            /* Speed Ref Ramp */
+            if (ctrlParm.qDiff < 0)
+            {
+                /* Set this cycle reference as the sum of
+                previously calculated one plus the reference ramp value */
+                ctrlParm.qVelRef = ctrlParm.qVelRef+ctrlParm.qRefRamp;
+            }
+            else
+            {
+                /* Same as above for speed decrease */
+                ctrlParm.qVelRef = ctrlParm.qVelRef-ctrlParm.qRefRamp;
+            }
+            /* If difference less than half of ref ramp, set reference
+            directly from the pot */
+            if (_Q15abs(ctrlParm.qDiff) < (ctrlParm.qRefRamp << 1))
+            {
+                ctrlParm.qVelRef = readADCParm.qAnRef;
+            }
+            ctrlParm.speedRampCount = 0;
         }    
         /* Tuning is generating a software ramp
         with sufficiently slow ramp defined by 
