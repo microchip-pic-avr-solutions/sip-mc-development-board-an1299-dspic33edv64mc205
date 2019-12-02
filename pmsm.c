@@ -269,13 +269,6 @@ void DoControl( void )
     /* Temporary variables for sqrt calculation of q reference */
     volatile int16_t temp_qref_pow_q15;
     
-    #ifdef TUNING
-        /* Tuning speed ramp value  */
-        motorStartUpData.tuningAddRampup = 0;
-        /* tuning speed ramp increase delay */
-        motorStartUpData.tuningDelayRampup;   
-    #endif
-
     if (uGF.bits.OpenLoop)
     {
         /* OPENLOOP:  force rotating angle,Vd and Vq */
@@ -293,7 +286,10 @@ void DoControl( void )
             motorStartUpData.startupLock = 0;
             motorStartUpData.startupRamp = 0;
             #ifdef TUNING
-                MotorParm_A.tuning_add_rampup = 0;
+                /* Tuning speed ramp value  */
+                motorStartUpData.tuningAddRampup = 0;
+                /* tuning speed ramp increase delay */
+                motorStartUpData.tuningDelayRampup = 0;   
             #endif
         }
         /* Speed reference */
