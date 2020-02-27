@@ -38,6 +38,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "hardware_access_functions.h"
+#include "userparms.h"
 #ifdef __XC16__  // See comments at the top of this header file
     #include <xc.h>
 #endif // __XC16__
@@ -88,7 +89,7 @@ typedef struct
 #define	BUTTON_DEBOUNCE_COUNT       40
 /** The board service Tick is set as 1 millisecond - specify the count in terms 
     PWM ISR cycles (i.e. BOARD_SERVICE_TICK_COUNT = 1 milli Second / PWM period)*/
-#define BOARD_SERVICE_TICK_COUNT   20
+#define BOARD_SERVICE_TICK_COUNT   (uint16_t)(PWMFREQUENCY_HZ/1000)
 
 extern void DisablePWMOutputsInverterA(void);
 extern void EnablePWMOutputsInverterA(void);

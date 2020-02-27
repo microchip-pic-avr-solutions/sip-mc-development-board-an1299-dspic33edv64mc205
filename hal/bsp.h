@@ -64,8 +64,8 @@ extern uint8_t bspUnassignedTestPoint;
  * on hardware features that may or may not be available across 
  * all hardware platforms.
  */
-#define BSP_LATCH_GATE_DRIVER_A_CE        CNPUAbits.CNPUA7
-#define BSP_LATCH_GATE_DRIVER_A_CE_PORT   &CNPUA
+#define BSP_LATCH_GATE_DRIVER_A_CE        LATAbits.LATA7
+#define BSP_LATCH_GATE_DRIVER_A_CE_PORT   &LATA
 #define BSP_LATCH_GATE_DRIVER_A_CE_BIT    7
 
 #define BSP_LATCH_GATE_DRIVER_A_FAULT     PORTAbits.RA10

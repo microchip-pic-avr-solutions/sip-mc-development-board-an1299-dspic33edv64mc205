@@ -232,13 +232,13 @@ static bool HAL_GateDriver_Initialize(GATE_DRIVER_OBJ *pGateDriver)
 {
     /* Resets the Gate Driver Object */
     memset(pGateDriver,0,sizeof(GATE_DRIVER_OBJ));
-    /* Ensures  that the Gate Driver is disabled */
-    HAL_GateDriver_Disable(pGateDriver);
     
     /* Initialize the CE signal port SFR and bit mask */
     pGateDriver->chipEnablePort = BSP_LATCH_GATE_DRIVER_A_CE_PORT;
     pGateDriver->chipEnableMask = 1<<BSP_LATCH_GATE_DRIVER_A_CE_BIT;
-
+    
+    /* Ensures  that the Gate Driver is disabled */
+    HAL_GateDriver_Disable(pGateDriver);
     /* Initialize Gate Driver Command Options*/
     pGateDriver->cmd0Data.byte = 0;
     pGateDriver->cmd0Data.sleepMode = GATE_DRIVER_ENTERS_STANDBY_MODE;

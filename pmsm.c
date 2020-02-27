@@ -121,7 +121,7 @@ int main ( void )
 {
     InitOscillator();
     SetupGPIOPorts();
-    DiagnosticsInit();
+    
     /* Initialize Peripherals */
     InitPeripherals();
     MeasCurrOffset(&measCurrParm.Offseta,&measCurrParm.Offsetb);

@@ -133,6 +133,7 @@ void MapGPIOHWFuntion(void)
     _CNPUG6 = 1;
     _CNPUA7 = 1;
     _CNPUA10 = 1;
+    TRISAbits.TRISA7 = 0;
     
      configureGateDriverFault();
 
