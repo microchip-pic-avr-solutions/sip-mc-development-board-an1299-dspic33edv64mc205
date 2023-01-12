@@ -389,6 +389,50 @@ inline static void UART2_ReceiveBufferOverrunErrorFlagClear(void)
 }
 
 /**
+ * Sets the UART2 Transmit Break bit.UxTX pin is driven low regardless of 
+ * the transmitter state.A Break character transmit consists of a Start bit, 
+ * followed by twelve bits of ?0? and a Stop bit.
+ * @example
+ * <code>
+ * UART2_TransmitBreakRequestFlagSet();
+ * </code>
+ */
+inline static void UART2_TransmitBreakRequestFlagSet(void)
+{
+    U2STAbits.UTXBRK = 1;
+}
+
+/**
+ * Enables UART2 module Auto baud rate measurement on the next character, 
+ * requires reception of a Sync field (0x55);cleared in hardware upon completion
+ * @example
+ * <code>
+ * UART2_AutoBaudEnable();
+ * </code>
+ */
+inline static void UART2_AutoBaudEnable(void) {U2MODEbits.ABAUD = 1; }
+
+/**
+ * Disables UART2 module Auto Baud Measurement or it is complete.
+ * @example
+ * <code>
+ * UART2_AutoBaudDisable();
+ * </code>
+ */
+inline static void UART2_AutoBaudDisable(void) {U2MODEbits.ABAUD = 0; }
+
+/**
+ * Gets the status of Auto Baud Measurement
+ * @return Inverse of Auto Baud Enable Bit; 1 = Auto Baud Measurement Requested, 
+ * 0 = Auto Baud Measurement is completed or disabled.
+ * @example
+ * <code>
+ * status = UART2_UART2_IsAutoBaudComplete();
+ * </code>
+ */
+inline static bool UART2_IsAutoBaudComplete(void) {return !U2MODEbits.ABAUD; }
+
+/**
  * Writes a 16-bit data word to UART2 transmit register.
  * @param data data to be transmitted on UART2
  * @example
@@ -412,6 +456,18 @@ inline static void UART2_DataWrite(uint16_t data)
 inline static uint16_t UART2_DataRead(void)
 {
     return U2RXREG;
+}
+/**
+ * Reads a 16-bit data word from the UART2 Baud Rate Divisor Register.
+ * @return data read from the  UART2 Baud Rate Divisor Register
+ * @example
+ * <code>
+ * rxdata = UART2_BaudRateDivisorRead();
+ * </code>
+ */
+inline static uint16_t UART2_BaudRateDivisorRead(void)
+{
+    return U2BRG;
 }
 
 #ifdef __cplusplus  // Provide C++ Compatibility

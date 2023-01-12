@@ -41,11 +41,14 @@
 *
 *******************************************************************************/
 
-#include "X2CScope.h"
-#include "hal/uart1.h"
 #include <stdint.h>
+#include "uart1.h"
+#include "X2CScope.h"
 
+#define X2C_DATA __attribute__((section("x2cscope_data_buf")))
 #define X2C_BAUDRATE_DIVIDER 37
+#define X2C_BUFFER_SIZE 4000
+X2C_DATA static uint8_t X2C_BUFFER[X2C_BUFFER_SIZE];
     /*
      * baud rate = 70MHz/16/(1+baudrate_divider) for highspeed = false
      * baud rate = 70MHz/4/(1+baudrate_divider) for highspeed = true
@@ -84,6 +87,7 @@ void DiagnosticsInit(void)
     UART1_Initialize();
     UART1_BaudRateDividerSet(X2C_BAUDRATE_DIVIDER);
     UART1_SpeedModeStandard();
+    UART1_ModuleEnable();  
     
     X2CScope_Init();
 }
@@ -107,20 +111,12 @@ static void X2CScope_sendSerial(uint8_t data)
 
 static uint8_t X2CScope_receiveSerial()
 {
-    const uint16_t error_mask = UART1_RX_OVERRUN_ERROR
-                              | UART1_FRAMING_ERROR
-                              | UART1_PARITY_ERROR;
-    if (UART1_StatusGet() & error_mask)
-    {
-        UART1_ReceiveBufferOverrunErrorFlagClear();
-        return 0;
-    }
     return UART1_DataRead();
 }
 
 static uint8_t X2CScope_isReceiveDataAvailable()
 {
-    return UART1_StatusGet() & UART1_RX_DATA_AVAILABLE;
+    return UART1_IsReceiveBufferDataReady();
 }
 
 static uint8_t X2CScope_isSendReady()
@@ -135,5 +131,5 @@ void X2CScope_Init(void)
         X2CScope_receiveSerial,
         X2CScope_isReceiveDataAvailable,
         X2CScope_isSendReady);
-    X2CScope_Initialise();
+    X2CScope_Initialise(X2C_BUFFER,sizeof(X2C_BUFFER));
 }

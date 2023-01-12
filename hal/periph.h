@@ -59,7 +59,7 @@
 #define OSC_FRC                 0               // Internal RC Oscllator
 #define OSC_XTAL                1               // Primary oscillator - XTAL
 // Select Oscillator Mode
-#define OSC_MODE                OSC_XTAL
+#define OSC_MODE                OSC_FRC
 // Instruction cycle frequency (Hz)
 #define FCY_MHZ                 (uint32_t)70
 // Instruction cycle frequency (MHz)

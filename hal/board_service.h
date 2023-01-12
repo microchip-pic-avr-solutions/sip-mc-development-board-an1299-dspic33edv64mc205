@@ -100,7 +100,7 @@ extern bool IsPressed_Button1(void);
 extern bool IsPressed_Button2(void);
 
 extern volatile uint16_t systemState;
-extern volatile HAL_BOARD_STATUS runtimeState;
+extern volatile uint16_t runtimeState;
 #ifdef __cplusplus
 }
 #endif

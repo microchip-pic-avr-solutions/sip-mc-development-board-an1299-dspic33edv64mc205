@@ -136,6 +136,8 @@ void MapGPIOHWFuntion(void)
     TRISAbits.TRISA7 = 0;
     
      configureGateDriverFault();
+    _U2RXR = 118;
+    _RP118R = 3;
 
 }
 void configureGateDriverFault(void)

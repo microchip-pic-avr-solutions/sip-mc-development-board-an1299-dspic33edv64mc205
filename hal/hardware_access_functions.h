@@ -95,7 +95,8 @@ HAL_BOARD_STATUS HAL_Board_Service(void);
  * HAL_Board_Board_FaultClear();
  * <code>
  */
-void HAL_Board_Board_FaultClear(void);
+void HAL_Board_FaultClear(void);
+void HAL_Board_AutoBaudRequest(void);
 
 extern  GATE_DRIVER_OBJ inverterGateDriver[BSP_GATE_DRIVER_INSTANCE_COUNT];
 #ifdef __cplusplus

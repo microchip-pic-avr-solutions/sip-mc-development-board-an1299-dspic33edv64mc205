@@ -121,7 +121,7 @@ int main ( void )
 {
     InitOscillator();
     SetupGPIOPorts();
-    
+
     /* Initialize Peripherals */
     InitPeripherals();
     MeasCurrOffset(&measCurrParm.Offseta,&measCurrParm.Offsetb);
@@ -129,7 +129,7 @@ int main ( void )
     
     BoardServiceInit();
     CORCONbits.SATA = 0;
-    
+
     while(1)
     {
         /* Initialize PI control parameters */
@@ -145,7 +145,7 @@ int main ( void )
         {
             BoardService();
         }
-        HAL_Board_Board_FaultClear();
+        HAL_Board_FaultClear();
         while(1)
         {
             DiagnosticsStepMain();
@@ -173,6 +173,7 @@ int main ( void )
             }
             if (IsPressed_Button2())
             {
+                HAL_Board_AutoBaudRequest();
                 if ((uGF.bits.RunMotor == 1) && (uGF.bits.OpenLoop == 0))
                 {
                     uGF.bits.ChangeSpeed = !uGF.bits.ChangeSpeed;
@@ -482,7 +483,7 @@ void DoControl( void )
  */
 void __attribute__((interrupt, no_auto_psv)) _ADCInterrupt(void)
 {
-    
+
     if (uGF.bits.RunMotor)
     {
         /* Calculate qIa,qIb */
@@ -675,7 +676,7 @@ void __attribute__ ((interrupt, no_auto_psv)) _CNInterrupt(void)
     {
         ResetParmeters();
         LED2 = 1;
-        HAL_Board_Board_FaultClear();
+        HAL_Board_FaultClear();
     }
     else
     {

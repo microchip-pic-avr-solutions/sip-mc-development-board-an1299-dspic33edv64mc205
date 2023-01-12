@@ -79,40 +79,9 @@ extern uint8_t bspUnassignedTestPoint;
  * by the end-application. These generic hardware access macros can be
  * redefined to match their functionality.
  */
-//#define BSP_GATE_DRIVER_B_CE                          BSP_LATCH_GATE_DRIVER_A_CE
-//#define BSP_GATE_DRIVER_B_CE_PORT                     BSP_LATCH_GATE_DRIVER_A_CE_PORT
-//#define BSP_GATE_DRIVER_B_CE_BIT                      BSP_LATCH_GATE_DRIVER_A_CE_BIT
 
 #define BSP_DIAGNOSTICS_UARTMODULE                    1
 #define BSP_GATE_DRIVER_INTERFACE_A_UARTMODULE        2
-
-/**
- * Function to set UART1 Transmit Pin.
- * @return None
- * @example
- * <code>
- * BSP_UART1_ConfigureTransmitPin();
- * </code>
- */
-inline static void BSP_UART1_ConfigureTransmitPin(void)
-{
-//    LATBbits.LATB7 = 1;
-    _RP118R = 3; 
-}
-/**
- * Function to set UART1 Transmit Pin.
- * @return None
- * @example
- * <code>
- * BSP_UART1_ConfigureTransmitPin();
- * </code>
- */
-inline static void BSP_UART1_ConfigureRecievePin(void)
-{
-//    LATBbits.LATB7 = 0;
-    _U2RXR = 118;
-    _RP118R = 0;
-}
 
 #ifdef __cplusplus
 }
