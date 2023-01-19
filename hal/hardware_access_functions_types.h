@@ -147,7 +147,7 @@ typedef struct
     void (*ModuleEnable)(void); 
     void (*TransmitModeEnable)(void);
     void (*TransmitModeDisable)(void);
-    void (*ReceiveBufferOverrunErrorFlagClear)(void);
+    void (*ReceiveBufferEmpty)(void);
     bool (*IsTransmissionComplete)(void);
     void (*TransmitBreakRequestFlagSet)(void);
     void (*AutoBaudEnable)(void);
@@ -417,8 +417,10 @@ typedef enum tagGATE_DRIVER_OPERATION_STATE
     GATE_DRIVER_OP_DONE = 4,                    
     /* Gate Driver Handler is performing the Requested Operation */       
     GATE_DRIVER_OP_BUSY = 5,               
-    /** Gate Driver is installed and is ready for operation */   
-    GATE_DRIVER_OP_READY   = 6,                        
+    /* Gate Driver is installed and is ready for operation */   
+    GATE_DRIVER_OP_READY   = 6, 
+    /* Gate Driver performing Auto Baud Sequence */ 
+    GATE_DRIVER_OP_AUTOBAUD = 7
 }GATE_DRIVER_OPERATION_STATE;
 
 /** 
@@ -438,7 +440,7 @@ typedef enum tagGATE_DRIVER_CONFIG_STATE
     /* Gate Driver configuration had some issues ,indicates application
        retry configuring gate driver */     
     GATE_DRIVER_CONFIG_TRYAGAIN = 3,       
-    /** Auto Baud sequence completed */
+    /** Auto Baud sequence is being executed */
     GATE_DRIVER_CONFIG_AUTOBAUD   = 8,            
     /** Gate Driver is installed and ready for operation */  
     GATE_DRIVER_CONFIG_INSTALLED   = 4, 

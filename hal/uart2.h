@@ -458,6 +458,27 @@ inline static uint16_t UART2_DataRead(void)
     return U2RXREG;
 }
 /**
+ * Clears the Receive Buffer Data Available bit for UART2. If this bit
+ * was previously set, then calling this function will reset the receiver buffer
+ * and the U2RSR to an empty state.
+ * @example
+ * <code>
+ * UART2_ReceiveBufferEmpty();
+ * </code>
+ */
+inline static void UART2_ReceiveBufferEmpty(void)
+{
+    uint16_t data;
+    if(!U2STAbits.URXDA == 0)
+    {
+        while(UART2_IsReceiveBufferDataReady()) 
+        {
+            data = UART2_DataRead() ;
+        }
+        U2STAbits.URXDA = 0;
+    }
+}
+/**
  * Reads a 16-bit data word from the UART2 Baud Rate Divisor Register.
  * @return data read from the  UART2 Baud Rate Divisor Register
  * @example

@@ -86,9 +86,13 @@
  */
 #define BSP_GATE_DRIVER_INSTANCE_COUNT      1
 #define BSP_GATE_DRIVER_A_INDEX             0
-
+/*Scaler for Baud Rate 9600 bps*/
 #define GATE_DRIVER_COMM_BAUDRATE_SCALER   454
-
+/*Scaler for Baud Rate 10170 bps(High Limit)*/
+#define GATE_DRIVER_COMM_BAUDRATE_SCALER_MIN   429
+/*Scaler for Baud Rate 9030 bps(Low Limit)*/
+#define GATE_DRIVER_COMM_BAUDRATE_SCALER_MAX   483
+/*Scaler for Baud Rate 7880 bps*/
 #define GATE_DRIVER_COMM_ABAUD_BREAK_WINDOW_SCALER  554
 
 #define GATE_DRIVER_FAULT_CLEARING_PULSE_WIDTH 5
@@ -166,11 +170,11 @@ of the status of the regulator.   */
 */
 #define GATE_DRIVER_READSTATUS_SETRXPIN_TIMEOUT 0
 
-/** The time duration to wait after initiating Break Character Sequence in mSec
-*/    
+/** The time duration to wait after initiating Break Character Sequence 
+* in mSec */    
 #define GATE_DRIVER_ABAUD_BREAK_SEQUENCE_TIMEOUT       1
-/** The time duration to wait after transmitting the Break Character for Auto Baud in mSec
-*/    
+/** The time duration to wait after transmitting the Break Character for 
+* Auto Baud in mSec */    
 #define GATE_DRIVER_ABAUD_CHARACTER_RECIEVE_TIMEOUT    4 
 
 /** Dummy Data to be sent to initiate Break Character Transmit Sequence */

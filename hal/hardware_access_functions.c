@@ -164,7 +164,7 @@ GATE_DRIVER_HANDLER_STATE HAL_GateDriver_Configure(GATE_DRIVER_OBJ *pGateDriver,
                 pGateDriver->configState = HAL_GateDriver_Install(pGateDriver);
                 if (pGateDriver->configState==GATE_DRIVER_CONFIG_INSTALLED)
                 {
-                    pGateDriver->activeState = GATE_DRIVER_OP_READY;
+                    pGateDriver->activeState = GATE_DRIVER_OP_BUSY;
                     pGateDriver->tryAgainCount = 0;
                 }
             break;
@@ -200,60 +200,78 @@ GATE_DRIVER_HANDLER_STATE HAL_GateDriver_Configure(GATE_DRIVER_OBJ *pGateDriver,
  */
 GATE_DRIVER_HANDLER_STATE HAL_GateDriver_Status(GATE_DRIVER_OBJ *pGateDriver)
 {    
-    if(pGateDriver->activeState == GATE_DRIVER_OP_DONE)
-    {
-        if(pGateDriver->autoBaudRequest == 1)            
-        {
-            pGateDriver->autoBaudInitiate = 1;
-            pGateDriver->autoBaudRequest = 0;
-            pGateDriver->timeoutResidue = pGateDriver->timeout;
-            pGateDriver->timeout = 0;
-        }
-    }
-    else
-    {
-        if(pGateDriver->autoBaudInitiate  == 0)
-        {
-            pGateDriver->autoBaudRequest = 1;
-        }
-
-    }
     /* Waits for  Gate Driver Scheduler Timeout,if activated ; 
      * This allows wait states between different events */
-    if ((HAL_GateDriver_SchedulerRun(&pGateDriver->timeout) == true))
-    {   
-
-        /* If Gate Driver internal Operation state anything other than 
-         * GATE_DRIVER_OP_NOT_READY ,GATE_DRIVER_OP_TRYAGAIN,
-         * Gate Driver operation status can be requested */
-        if (pGateDriver->activeState == GATE_DRIVER_OP_TRYAGAIN)
-        {
-            if (pGateDriver->tryAgainCount < GATE_DRIVER_TRYCOUNT_MAX)
+    switch(pGateDriver->activeState)
+    {
+        case GATE_DRIVER_CONFIG_TRYAGAIN:
+            if ((HAL_GateDriver_SchedulerRun(&pGateDriver->timeout) == true))
             {
-                pGateDriver->tryAgainCount++;
-                pGateDriver->statusRegIndex = 0;
-                pGateDriver->activeState = GATE_DRIVER_OP_READY;
+                if (pGateDriver->tryAgainCount < GATE_DRIVER_TRYCOUNT_MAX)
+                {
+                    pGateDriver->tryAgainCount++;
+                    pGateDriver->statusRegIndex = 0;
+                    pGateDriver->pHostInterface->ReceiveBufferEmpty();
+                    pGateDriver->activeState = GATE_DRIVER_OP_DONE;
+                }
+                else
+                {
+                    pGateDriver->tryAgainCount = GATE_DRIVER_TRYCOUNT_MAX;
+                    pGateDriver->statusRegIndex = 0;
+                    pGateDriver->activeState = GATE_DRIVER_OP_ERROR;
+                }
             }
-            else
+        break;
+        case GATE_DRIVER_OP_WARNING: 
+        case GATE_DRIVER_OP_ERROR:
+        case GATE_DRIVER_OP_READY:        
+        case GATE_DRIVER_OP_DONE:
+            if(pGateDriver->autoBaudRequest == 1)            
             {
-                pGateDriver->tryAgainCount = GATE_DRIVER_TRYCOUNT_MAX;
-                pGateDriver->statusRegIndex = 0;
-                pGateDriver->activeState = GATE_DRIVER_OP_ERROR;
+                pGateDriver->activeState = GATE_DRIVER_OP_AUTOBAUD;
+                pGateDriver->timeoutResidue = pGateDriver->timeout;
+                pGateDriver->timeout = 0;
             }
-        }
-        else if (pGateDriver->activeState != GATE_DRIVER_OP_NOT_READY)
-        {
-            if(pGateDriver->autoBaudInitiate == 1) 
+            if ((HAL_GateDriver_SchedulerRun(&pGateDriver->timeout) == true))
+            {
+                pGateDriver->activeState = GATE_DRIVER_OP_AUTOBAUD;
+            }
+        break;
+        case GATE_DRIVER_OP_AUTOBAUD:
+            if ((HAL_GateDriver_SchedulerRun(&pGateDriver->timeout) == true))
             {
                 /* Call the Gate Driver read Status Function */
-                pGateDriver->activeState = HAL_GateDriver_AutoBaudSequence(pGateDriver);
+                if ((uint16_t)HAL_GateDriver_AutoBaudSequence(pGateDriver)  == 
+                                                               GATE_DRIVER_DONE)
+                {
+                    if(pGateDriver->autoBaudRequest == 1)
+                    {
+                        pGateDriver->activeState = GATE_DRIVER_OP_DONE;
+                        pGateDriver->autoBaudRequest = 0;
+                    }
+                    else
+                    {
+                        pGateDriver->activeState = GATE_DRIVER_OP_BUSY;
+                        pGateDriver->timeoutResidue = 0;
+                        pGateDriver->timeout = 0;
+                    }
+                }
             }
-            else
+        break;
+        case GATE_DRIVER_OP_BUSY:
+            if ((HAL_GateDriver_SchedulerRun(&pGateDriver->timeout) == true))
             {
-                /* Call the Gate Driver read Status Function */
                 pGateDriver->activeState = HAL_GateDriver_ReadStatus(pGateDriver);
+                if(pGateDriver->activeState == GATE_DRIVER_OP_DONE)
+                {
+                    pGateDriver->autoBaudRequest = 0;
+                }
             }
-        }      
+         break;
+            
+        default:
+            pGateDriver->activeState = GATE_DRIVER_OP_DONE;
+        break;  
     }
     /* Returns the Gate Driver Operation Status */
     return pGateDriver->activeState;
@@ -373,7 +391,7 @@ GATE_DRIVER_CONFIG_STATE HAL_GateDriver_Install(GATE_DRIVER_OBJ* pGateDriver)
     {
         case GATE_DRIVER_STATE_CMD_SET_CFG0:
             pGateDriver->pHostInterface->TransmitModeEnable();
-            pGateDriver->pHostInterface->ReceiveBufferOverrunErrorFlagClear();
+            pGateDriver->pHostInterface->ReceiveBufferEmpty();
             HAL_GateDriver_Write(pGateDriver->pHostInterface,GATE_DRIVER_CMD_SET_CFG0);
             HAL_GateDriver_Write(pGateDriver->pHostInterface,pGateDriver->cmd0Data.byte);
             pGateDriver->timeout = GATE_DRIVER_SETCONFIG_SETRXPIN_TIMEOUT;
@@ -394,27 +412,31 @@ GATE_DRIVER_CONFIG_STATE HAL_GateDriver_Install(GATE_DRIVER_OBJ* pGateDriver)
             if (ackData[0] != GATE_DRIVER_CMD_SET_CFG0)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN;
+                pGateDriver->timeout = GATE_DRIVER_SETCONFIG_TIMEOUT;
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             }
             if (ackData[1] != pGateDriver->cmd0Data.byte)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN; 
+                pGateDriver->timeout = GATE_DRIVER_SETCONFIG_TIMEOUT;
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             }
             if (ackData[2] != GATE_DRIVER_ACK_SET_CFG0)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN;
+                pGateDriver->timeout = GATE_DRIVER_SETCONFIG_TIMEOUT;
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             }
             if (ackData[3] != pGateDriver->cmd0Data.byte)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN;
+                pGateDriver->timeout = GATE_DRIVER_SETCONFIG_TIMEOUT;
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             }
         break;
         case GATE_DRIVER_STATE_CMD_SET_CFG2:
             pGateDriver->pHostInterface->TransmitModeEnable();
-            pGateDriver->pHostInterface->ReceiveBufferOverrunErrorFlagClear();
+            pGateDriver->pHostInterface->ReceiveBufferEmpty();
             HAL_GateDriver_Write(pGateDriver->pHostInterface,GATE_DRIVER_CMD_SET_CFG2);
             HAL_GateDriver_Write(pGateDriver->pHostInterface,pGateDriver->cmd2Data.byte);
             pGateDriver->timeout = GATE_DRIVER_SETCONFIG_SETRXPIN_TIMEOUT;
@@ -436,27 +458,32 @@ GATE_DRIVER_CONFIG_STATE HAL_GateDriver_Install(GATE_DRIVER_OBJ* pGateDriver)
             if (ackData[0] != GATE_DRIVER_CMD_SET_CFG2)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN;
+                pGateDriver->timeout = GATE_DRIVER_SETCONFIG_TIMEOUT;
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             }
             if (ackData[1] != pGateDriver->cmd2Data.byte)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN; 
+                pGateDriver->timeout = GATE_DRIVER_SETCONFIG_TIMEOUT;
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             }
             if (ackData[2] != GATE_DRIVER_ACK_SET_CFG2)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN;
+                pGateDriver->timeout = GATE_DRIVER_SETCONFIG_TIMEOUT;
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             }
             if (ackData[3] != pGateDriver->cmd2Data.byte)
             {
                 state = GATE_DRIVER_CONFIG_TRYAGAIN;
+                pGateDriver->timeout = GATE_DRIVER_SETCONFIG_TIMEOUT;
                 pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
             }
 
         break;
         default:
             state = GATE_DRIVER_CONFIG_TRYAGAIN;
+            pGateDriver->timeout = GATE_DRIVER_SETCONFIG_TIMEOUT;
             pGateDriver->installState = GATE_DRIVER_STATE_CMD_SET_CFG0;
         break;
     }
@@ -480,7 +507,7 @@ GATE_DRIVER_OPERATION_STATE HAL_GateDriver_ReadStatus(GATE_DRIVER_OBJ* pGateDriv
     {
         case GATE_DRIVER_STATE_CMD_READ_STATUS0:
             pGateDriver->pHostInterface->TransmitModeEnable();
-            pGateDriver->pHostInterface->ReceiveBufferOverrunErrorFlagClear();
+            pGateDriver->pHostInterface->ReceiveBufferEmpty();
             HAL_GateDriver_Write(pGateDriver->pHostInterface,GATE_DRIVER_CMD_GET_STATUS0);
             pGateDriver->timeout = GATE_DRIVER_READSTATUS_SETRXPIN_TIMEOUT;
             pGateDriver->statusRegIndex = GATE_DRIVER_STATE_ACK_RX_STATUS0;
@@ -498,11 +525,13 @@ GATE_DRIVER_OPERATION_STATE HAL_GateDriver_ReadStatus(GATE_DRIVER_OBJ* pGateDriv
             if (ackData[0] != GATE_DRIVER_CMD_GET_STATUS0)
             {
                 state = GATE_DRIVER_OP_TRYAGAIN;
+                pGateDriver->timeout = GATE_DRIVER_READSTATUS_TIMEOUT;
                 pGateDriver->statusRegIndex = GATE_DRIVER_STATE_CMD_READ_STATUS0;
             }
             if (ackData[1] != GATE_DRIVER_ACK_GET_STATUS0)
             {
                 state = GATE_DRIVER_OP_TRYAGAIN; 
+                pGateDriver->timeout = GATE_DRIVER_READSTATUS_TIMEOUT;
                 pGateDriver->statusRegIndex = GATE_DRIVER_STATE_CMD_READ_STATUS0;
             }
             pGateDriver->status0Data.byte = (uint8_t)ackData[2];
@@ -510,7 +539,7 @@ GATE_DRIVER_OPERATION_STATE HAL_GateDriver_ReadStatus(GATE_DRIVER_OBJ* pGateDriv
         break;
         case GATE_DRIVER_STATE_CMD_READ_STATUS1:
             pGateDriver->pHostInterface->TransmitModeEnable();
-            pGateDriver->pHostInterface->ReceiveBufferOverrunErrorFlagClear();
+            pGateDriver->pHostInterface->ReceiveBufferEmpty();
             HAL_GateDriver_Write(pGateDriver->pHostInterface,GATE_DRIVER_CMD_GET_STATUS1);
             pGateDriver->timeout = GATE_DRIVER_READSTATUS_SETRXPIN_TIMEOUT;
             pGateDriver->statusRegIndex = GATE_DRIVER_STATE_ACK_RX_STATUS1;
@@ -528,11 +557,13 @@ GATE_DRIVER_OPERATION_STATE HAL_GateDriver_ReadStatus(GATE_DRIVER_OBJ* pGateDriv
             if (ackData[0] != GATE_DRIVER_CMD_GET_STATUS1)
             {
                 state = GATE_DRIVER_OP_TRYAGAIN;
+                pGateDriver->timeout = GATE_DRIVER_READSTATUS_TIMEOUT;
                 pGateDriver->statusRegIndex = GATE_DRIVER_STATE_CMD_READ_STATUS0;
             }
             if (ackData[1] != GATE_DRIVER_ACK_GET_STATUS1)
             {
                 state = GATE_DRIVER_OP_TRYAGAIN;
+                pGateDriver->timeout = GATE_DRIVER_READSTATUS_TIMEOUT;
                 pGateDriver->statusRegIndex = GATE_DRIVER_STATE_CMD_READ_STATUS0;
             }
             pGateDriver->status1Data.byte = (uint8_t)ackData[2];
@@ -556,22 +587,33 @@ GATE_DRIVER_OPERATION_STATE HAL_GateDriver_ReadStatus(GATE_DRIVER_OBJ* pGateDriv
         break;
         default:
             state = GATE_DRIVER_OP_TRYAGAIN;
+            pGateDriver->timeout = GATE_DRIVER_READSTATUS_TIMEOUT;
             pGateDriver->statusRegIndex = GATE_DRIVER_STATE_CMD_READ_STATUS0;
         break;
     }
     return state;
 }
-
+/**
+ * Function to execute Auto Baud Sequence
+ * @param pGateDriver gate driver data
+ * @return GATE_DRIVER_OPERATION_STATE status of the Auto Baud Sequence
+ * @example
+ * <code>
+ * HAL_GateDriver_AutoBaudSequence();
+ * </code>
+ */
 GATE_DRIVER_OPERATION_STATE HAL_GateDriver_AutoBaudSequence(GATE_DRIVER_OBJ* pGateDriver)
 { 
-    uint16_t flushData = 0;
+    uint16_t interimData = 0;
     GATE_DRIVER_OPERATION_STATE state = GATE_DRIVER_OP_BUSY;
 
     switch(pGateDriver->autoBaudStateIndex)
     {
         case GATE_DRIVER_STATE_AUTOBAUD_REQUEST:
             pGateDriver->pHostInterface->TransmitModeEnable();
-            pGateDriver->pHostInterface->ReceiveBufferOverrunErrorFlagClear();
+            pGateDriver->pHostInterface->ReceiveBufferEmpty();
+            pGateDriver->de2BaudRateData = 
+                        pGateDriver->pHostInterface->BaudRateDivisorRead();
             if(pGateDriver->pHostInterface->IsTransmissionComplete() == true)
             {
                 pGateDriver->pHostInterface->BaudRateDividerSet
@@ -603,8 +645,19 @@ GATE_DRIVER_OPERATION_STATE HAL_GateDriver_AutoBaudSequence(GATE_DRIVER_OBJ* pGa
         case GATE_DRIVER_STATE_AUTOBAUD_VERIFY:
             if(pGateDriver->pHostInterface->IsAutoBaudComplete() == true)
             {
-                pGateDriver->de2BaudRateData = 
-                        pGateDriver->pHostInterface->BaudRateDivisorRead();
+                interimData = pGateDriver->pHostInterface->BaudRateDivisorRead();
+                if((interimData < GATE_DRIVER_COMM_BAUDRATE_SCALER_MAX) &&
+                   (interimData > GATE_DRIVER_COMM_BAUDRATE_SCALER_MIN))
+                {
+                    /* New Baud Rate within the Limit*/
+                    pGateDriver->de2BaudRateData = interimData;
+                }
+                else
+                {
+                    /* New Baud Rate out of Limit, hence use previous rate*/
+                    pGateDriver->pHostInterface->BaudRateDividerSet
+                                                 (pGateDriver->de2BaudRateData); 
+                }
                 state = GATE_DRIVER_OP_DONE;
             }
             else
@@ -614,9 +667,9 @@ GATE_DRIVER_OPERATION_STATE HAL_GateDriver_AutoBaudSequence(GATE_DRIVER_OBJ* pGa
                 pGateDriver->pHostInterface->AutoBaudDisable();
                 state = GATE_DRIVER_OP_TRYAGAIN;
             }
-            flushData = HAL_GateDriver_Read(pGateDriver->pHostInterface);
-            flushData = HAL_GateDriver_Read(pGateDriver->pHostInterface);
-            pGateDriver->pHostInterface->ReceiveBufferOverrunErrorFlagClear();
+            interimData = HAL_GateDriver_Read(pGateDriver->pHostInterface);
+            interimData = HAL_GateDriver_Read(pGateDriver->pHostInterface);
+            pGateDriver->pHostInterface->ReceiveBufferEmpty();
             pGateDriver->autoBaudStateIndex= GATE_DRIVER_STATE_AUTOBAUD_REQUEST;       
             pGateDriver->timeout = pGateDriver->timeoutResidue;
             pGateDriver->timeoutResidue = GATEDRIVER_STATUS_READ_INTERVAL;
@@ -624,7 +677,6 @@ GATE_DRIVER_OPERATION_STATE HAL_GateDriver_AutoBaudSequence(GATE_DRIVER_OBJ* pGa
             {
                 pGateDriver->tryAgainCount = 0;
             }
-            pGateDriver->autoBaudInitiate = false ;
         break;
         default:
             state = GATE_DRIVER_OP_TRYAGAIN;
@@ -767,8 +819,8 @@ static bool HAL_GateDriver_HookUARTFunctions(GATE_DRIVER_HOST_INTERFACE *pHostIn
         pHostInterface->DataRead = UART2_DataRead;
         pHostInterface->IsReceiveBufferDataReady = 
                 UART2_IsReceiveBufferDataReady;
-        pHostInterface->ReceiveBufferOverrunErrorFlagClear = 
-                UART2_ReceiveBufferOverrunErrorFlagClear;
+        pHostInterface->ReceiveBufferEmpty = 
+                UART2_ReceiveBufferEmpty;
         pHostInterface->IsTransmissionComplete = 
                 UART2_IsTransmissionComplete;
         pHostInterface->TransmitBreakRequestFlagSet = 
@@ -823,5 +875,8 @@ void HAL_GateDriver_FaultClear(GATE_DRIVER_OBJ *pGateDriver)
  */
 void HAL_GateDriver_AutoBaudRequest(GATE_DRIVER_OBJ *pGateDriver)
 {
-    pGateDriver->autoBaudRequest = 1 ;
+    if (pGateDriver->autoBaudRequest == 0)
+    {
+        pGateDriver->autoBaudRequest = 1 ; 
+    }
 }
