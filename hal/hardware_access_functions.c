@@ -624,8 +624,6 @@ GATE_DRIVER_OPERATION_STATE HAL_GateDriver_AutoBaudSequence(GATE_DRIVER_OBJ* pGa
                 pGateDriver->timeout = GATE_DRIVER_ABAUD_BREAK_SEQUENCE_TIMEOUT ;
                 pGateDriver->autoBaudStateIndex = 
                         GATE_DRIVER_STATE_AUTOBAUD_CHARACTER_RECIEVE;
-                pGateDriver->de2BaudRateData = 
-                        pGateDriver->pHostInterface->BaudRateDivisorRead();
             }
             else
             {
