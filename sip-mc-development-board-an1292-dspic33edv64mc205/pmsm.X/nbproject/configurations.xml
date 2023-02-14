@@ -85,7 +85,7 @@
         <targetDevice>dsPIC33EDV64MC205</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>pk4hybrid</platformTool>
+        <platformTool>noID</platformTool>
         <languageToolchain>XC16</languageToolchain>
         <languageToolchainVersion>2.00</languageToolchainVersion>
         <platform>3</platform>
@@ -763,6 +763,8 @@
         <property key="memories.programmemory" value="true"/>
         <property key="memories.programmemory.ranges" value="0-afeb"/>
         <property key="poweroptions.powerenable" value="false"/>
+        <property key="programmerToGoFilePath"
+                  value="D:/Bitbucket/SiP Development Boards/sip-mc-development-board-an1292-dspic33edv64mc205/sip-mc-development-board-an1292-dspic33edv64mc205/pmsm.X/debug/default/pmsm_ptg"/>
         <property key="programmerToGoImageName" value="pmsm_ptg"/>
         <property key="programoptions.donoteraseauxmem" value="false"/>
         <property key="programoptions.eraseb4program" value="true"/>
@@ -865,8 +867,6 @@
         <property key="memories.programmemory" value="true"/>
         <property key="memories.programmemory.ranges" value="0-afeb"/>
         <property key="poweroptions.powerenable" value="false"/>
-        <property key="programmerToGoFilePath"
-                  value="D:/Bitbucket/SiP Development Boards/sip-mc-development-board-an1292-dspic33edv64mc205/sip-mc-development-board-an1292-dspic33edv64mc205/pmsm.X/debug/default/pmsm_ptg"/>
         <property key="programmerToGoImageName" value="pmsm_ptg"/>
         <property key="programoptions.donoteraseauxmem" value="false"/>
         <property key="programoptions.eraseb4program" value="true"/>

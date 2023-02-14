@@ -85,7 +85,7 @@
 .endif
 
 ; External references
-.include "ReadADC.inc"
+.include "readadc.inc"
 
 ; Register usage
 ; ADC Result
