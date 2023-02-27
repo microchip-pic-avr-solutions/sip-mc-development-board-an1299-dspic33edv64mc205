@@ -129,7 +129,7 @@ int main ( void )
     
     BoardServiceInit();
     CORCONbits.SATA = 0;
-
+    LED1 = 0;
     while(1)
     {
         /* Initialize PI control parameters */
