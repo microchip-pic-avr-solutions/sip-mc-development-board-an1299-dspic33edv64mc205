@@ -212,14 +212,13 @@ To view data plots continuously, uncheck **Single-shot.** When **Single-shot** i
  ## 6. REFERENCES:
 For additional information, refer following documents or links.
 1. AN1292 Application Note “[Sensorless Field Oriented Control (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW)](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/01292A.pdf)”
-2. AN1299 Application Note “[Single-Shunt Three-Phase Current Reconstruction Algorithm for Sensorless FOC of a PMSM](http://ww1.microchip.com/downloads/en/appnotes/01299a.pdf)”
-3. dsPIC33EDV64MC205 Motor Control Development Board User’s Guide [(DS50002883)](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ProductDocuments/UserGuides/DS50002883A-dsPIC33EDV64MC205_Motor_Control_Development_Board_User%27s_Guide.pdf) 
-5. dsPIC33EDV64MC205 Family datasheet [(DS70005292)](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ProductDocuments/DataSheets/dsPIC33EDV64MC205-Data-Sheet-DS70005292F.pdf)
-6. [Family Reference Manuals (FRM) of dsPIC33EDV64MC205](https://www.microchip.com/en-us/product/dsPIC33EDV64MC205#document-table)
-7. MPLAB® X IDE User’s Guide (DS50002027) or MPLAB® X IDE help
-8. [MPLAB® X IDE installation](http://microchipdeveloper.com/mplabx:installation)
-9. [MPLAB® XC16 Compiler installation](http://microchipdeveloper.com/xc16:installation)
-10. [Installation and setup of X2Cscope plugin for MPLAB X](https://x2cscope.github.io/docs/MPLABX_Plugin.html)
+2. dsPIC33EDV64MC205 Motor Control Development Board User’s Guide [(DS50002883)](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ProductDocuments/UserGuides/DS50002883A-dsPIC33EDV64MC205_Motor_Control_Development_Board_User%27s_Guide.pdf) 
+3. dsPIC33EDV64MC205 Family datasheet [(DS70005292)](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ProductDocuments/DataSheets/dsPIC33EDV64MC205-Data-Sheet-DS70005292F.pdf)
+4. [Family Reference Manuals (FRM) of dsPIC33EDV64MC205](https://www.microchip.com/en-us/product/dsPIC33EDV64MC205#document-table)
+5. MPLAB® X IDE User’s Guide (DS50002027) or MPLAB® X IDE help
+6. [MPLAB® X IDE installation](http://microchipdeveloper.com/mplabx:installation)
+7. [MPLAB® XC16 Compiler installation](http://microchipdeveloper.com/xc16:installation)
+8. [Installation and setup of X2Cscope plugin for MPLAB X](https://x2cscope.github.io/docs/MPLABX_Plugin.html)
 
 
 
