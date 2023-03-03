@@ -83,7 +83,13 @@ constant slope. The slope is determined by TUNING_DELAY_RAMPUP constant.
 /* Definition for torque mode - for a separate tuning of the current PI
 controllers, tuning mode will disable the speed PI controller */
 #undef TORQUE_MODE
-
+    
+/* Define this to run single shunt reconstruction algorithm to reconstruct
+   phase currents from DC BUS Current feedback. 
+   Undefine this macro (SINGLE_SHUNT) to disable single shunt reconstruction
+   and used measured phase current feedbacks (or dual shunt operation).*/    
+#define SINGLE_SHUNT 
+    
 /*********************************** ADC Scaling ******************************/
 /* Scaling constants: Determined by calibration or hardware design. */
 

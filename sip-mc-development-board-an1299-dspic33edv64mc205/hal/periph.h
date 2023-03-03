@@ -95,7 +95,7 @@
 
 // ADC MODULE Related Defintions
 // Specify Minimum ADC Clock Period (TAD)in uSec
-#define ADC_MIN_TAD_MICROSEC     0.1
+#define ADC_MIN_TAD_MICROSEC     0.076
 // Specify Max Time to stabilize Analog Stage from ADC OFF to ADC ON in uSecs
 // The parameter, tDPU, is the time required for the ADC module to stabilize at
 // the appropriate level when the module is turned on (AD1CON1<ADON> = 1).
@@ -113,8 +113,10 @@
 #define CH123_IS_AN0_AN1_AN2    0x00
 
 // Setting Channel No connected to ADC1 Sample/Hold Channel #0(ADC1-CH0)
-// IBUS is connected for sample/conversion by ADC1 CH0
-#define ADC1_ANx_CH0            2
+// IBUS,POT is connected for sample/conversion to ADC1 CH0 
+#define ADC1_ANx_CH0_IBUS       2
+#define ADC1_ANx_CH0_POT        0        
+        
 // Setting Channels to be connected to ADC1 Sample/Hold Channels 1,2,3
 // for simultaneous sampling  : AN0(IB),AN1(IA),AN2(IBUS)
 #define ADC1_ANx_CH123          CH123_IS_OA1_OA2_OA3
@@ -134,6 +136,7 @@
 #define  CURRENT_OFFSET_SAMPLE_SCALER         7 
 // Clear CN interrupt         
 #define ClearCNIF() IFS1bits.CNIF = 0       
+#define ClearPWM1IF()           IFS5bits.PWM1IF = 0;        // Clear PWM1 Interrupt flag        
 // *****************************************************************************
 // *****************************************************************************
 // Section: Data Types
