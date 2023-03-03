@@ -417,7 +417,8 @@ void InitPWMGenerators(void)
     IOCON1 = 0xC301;
     IOCON2 = 0xC301;
     IOCON3 = 0xC301;
-
+    PTPER = 2*LOOPTIME_TCY + 1;
+    SEVTCMP = 0;
     PTCONbits.PTEN = 1;      // Enable PWM module after initialising generators
     
 
@@ -476,7 +477,7 @@ void InitPWM123Generators(void)
     PWMCON2bits.CLIEN = 0;      // 0 = Current-limit interrupt is disabled
     PWMCON3bits.CLIEN = 0;      // 0 = Current-limit interrupt is disabled
 
-    PWMCON1bits.TRGIEN = 0;     // 0 = Trigger event interrupts are disabled
+    PWMCON1bits.TRGIEN = 1;     // 1 = Trigger event interrupts are enabled
     PWMCON2bits.TRGIEN = 0;     // 0 = Trigger event interrupts are disabled
     PWMCON3bits.TRGIEN = 0;     // 0 = Trigger event interrupts are disabled
 
@@ -593,7 +594,7 @@ void InitPWM123Generators(void)
     // TRGCMP(15:0): Trigger Control Value bits
     // When the primary PWMx functions in local time base, 
     // this register contains the compare values that can trigger the ADC module.
-    TRIG1 = PHASE1 - 1;         // Set to trigger ADC at the PWM edge
+    TRIG1 = 0;         // Set to trigger ADC at the PWM edge
     TRIG2 = 0;                  // Set at centre of the PWM (not used)
     TRIG3 = 0;                  // Set at centre of the PWM (not used)
     
@@ -622,7 +623,7 @@ void InitPWM123Generators(void)
     FCLCON3bits.FLTMOD = 0;     // 0b01 = forces PWM3H,L to FLTDAT values(cycle)
 
     // Configuring PWMx Generators Interrupts and Priority
-    IPC23bits.PWM1IP = 4;       // PWM1 Interrupt Priority is 4
+    IPC23bits.PWM1IP = 6;       // PWM1 Interrupt Priority is 6
     IPC23bits.PWM2IP = 4;       // PWM2 Interrupt Priority is 4
     IPC24bits.PWM3IP = 4;       // PWM3 Interrupt Priority is 4
 
@@ -630,7 +631,7 @@ void InitPWM123Generators(void)
     IFS5bits.PWM2IF = 0;        // Clear PWM1 Interrupt flag
     IFS6bits.PWM3IF = 0;        // Clear PWM1 Interrupt flag
 
-    IEC5bits.PWM1IE = 0;        // Disable PWM1 Interrupt
+    IEC5bits.PWM1IE = 1;        // Enable PWM1 Interrupt
     IEC5bits.PWM2IE = 0;        // Disable PWM2 Interrupt
     IEC6bits.PWM3IE = 0;        // Disable PWM3 Interrupt
 
@@ -751,9 +752,12 @@ void InitADCModule1(ADC_OFFSET_T *adc_offset)
                             // 0b0111 1111 1100 0000 = 0.99804
                             // 0b0000 0000 0000 0000 = 0
                             // 0b1000 0000 0000 0000 = -1
-    AD1CON1bits.SSRCG = 1;  // if SSRCG =  1,
-    AD1CON1bits.SSRC = 0;   // 000 = PWM Generator 1 primary trigger compare
-                            // ends sampling and starts conversion
+
+    AD1CON1bits.SSRCG = 0;  // if SSRCG =  0,
+    AD1CON1bits.SSRC = 3;   // 011=PWM primary Special Event Trigger 
+                            //ends sampling and starts conversion
+   
+    
     AD1CON1bits.SIMSAM = 1; // Samples CH0-CH3 simultaneously(if CHPS = 1x).
     AD1CON1bits.ASAM = 1;   // Sampling begins immediately after
                             // last conversion completes.SAMP bit is auto set.
@@ -772,7 +776,11 @@ void InitADCModule1(ADC_OFFSET_T *adc_offset)
     AD1CON2 = 0;
     AD1CON2bits.VCFG = 0;   // ADC Voltage Reference VREFH = AVDD; VREFL = AVSS
     AD1CON2bits.CSCNA = 0;  // 0 = Does not scan inputs
+#ifdef  SINGLE_SHUNT
+    AD1CON2bits.CHPS = 0;   // 0 = Converts CH0
+#else
     AD1CON2bits.CHPS = 2;   // 1x = Converts CH0, CH1, CH2 and CH3
+#endif
     AD1CON2bits.SMPI = 0;   // x0000 = Generates interrupt after completion
                             // of every sample/conversion operation
     AD1CON2bits.BUFM = 0;   // 0 = Starts filling buffer from the Start address
@@ -821,8 +829,8 @@ void InitADCModule1(ADC_OFFSET_T *adc_offset)
     AD1CHS0bits.CH0NB = 0;  // 0 = Channel 0 negative input is VREFL
     AD1CHS0bits.CH0SB = 0;  // 0b000000 (Not used in this application)
     AD1CHS0bits.CH0NA = 0;  // 0 = Channel 0 negative input is VREFL
-    // CH0 is used for measuring voltage set by speed reference potentiometer
-    AD1CHS0bits.CH0SA = ADC1_ANx_CH0;
+	// CH0 is used for measuring dc bus current
+    AD1CHS0bits.CH0SA = ADC1_ANx_CH0_IBUS;
     
     // AD1CSSH: ADC1 INPUT SCAN SELECT REGISTER HIGH
     // CSS(31-16): ADC Input Scan Selection bits

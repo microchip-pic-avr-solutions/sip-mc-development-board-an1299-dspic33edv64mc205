@@ -5,7 +5,7 @@
 ## 1. INTRODUCTION
 This document describes the setup requirements for driving a Permanent Magnet Synchronous Motor (PMSM) using Sensorless Field Oriented Control (FOC) and PLL Estimator Algorithms on the hardware platform dsPIC33EDV64MC205 Motor Control Development Board.
 
-For details about PLL estimator refer to Microchip application note [AN1292](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/01292A.pdf) “Sensorless Field Oriented Control (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW)”
+For details about PLL estimator refer to Microchip application note [AN1292](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/01292A.pdf) “Sensorless Field Oriented Control (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW)” and [AN1299](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ApplicationNotes/ApplicationNotes/01299A.pdf) "Single-Shunt Three-Phase Current Reconstruction Algorithm for Sensorless FOC of a PMSM".
 
 </br>
 
@@ -14,7 +14,7 @@ For details about PLL estimator refer to Microchip application note [AN1292](htt
 ### 2.1 Motor Control Application Firmware Required for the Demonstration
 
 To clone or download this application firmware on GitHub, 
-- Navigate to the [main page of this repository](https://github.com/microchip-pic-avr-solutions/sip-mc-development-board-an1292-dspic33edv64mc205) and 
+- Navigate to the [main page of this repository](https://github.com/microchip-pic-avr-solutions/sip-mc-development-board-an1299-dspic33edv64mc205) and 
 - On the tab **<> Code**, above the list of files in the right-hand corner, click Code, then from the menu, click **Download ZIP** or copy the repository URL to **clone.**
 > **Note:** </br>
 >In this document, hereinafter this firmware package is referred as **firmware.**
@@ -78,7 +78,7 @@ X2C-Scope is an MPLAB X IDE plugin that allows developers to interact with an ap
 ### 5.1 Firmware Description
 The firmware version needed for the demonstration is mentioned in the section [Motor Control Application Firmware Required for the Demonstration](#21-motor-control-application-firmware-required-for-the-demonstration) section. This firmware is implemented to work on Microchip’s 16-bit Digital signal controller (dsPIC® DSC) **dsPIC33EDV64MC205**. For more information, see the **dsPIC33EDV64MC205 Family datasheet (DS70005292)**.
 
-The Motor Control Demo application uses a push button to start or stop the motor and a potentiometer to vary the speed of the motor. This Motor Control Demo Application configures and uses peripherals like PWM, ADC, UART, etc. For more details, refer to Microchip Application note **AN1292, “Sensorless Field Oriented Control (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW),”** available on the [Microchip website.]((https://www.microchip.com/).)
+The Motor Control Demo application uses a push button to start or stop the motor and a potentiometer to vary the speed of the motor. This Motor Control Demo Application configures and uses peripherals like PWM, ADC, UART, etc. For more details, refer to Microchip Application note **AN1292, “Sensorless Field Oriented Control (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW),”** and  **AN1299,"Single-Shunt Three-Phase Current Reconstruction Algorithm for Sensorless FOC of a PMSM"** available on the [Microchip website.]((https://www.microchip.com/).)
 
 > **Note:**</br>
 > The project may not build correctly in Windows OS if the Maximum path length of any source file in the project is more than 260 characters. In case the absolute path exceeds or nears the maximum length, do any (or both) of the following:
@@ -101,7 +101,7 @@ Follow the below instructions, step by step, to set up and run the motor control
 
 	
 3. Open <code>**userparms.h** </code> (**pmsm.X > Header Files**) in the project **pmsm.X.**  
-     - Ensure that the macros <code>**TUNING</code>, <code>OPEN_LOOP_FUNCTIONING</code>, and <code>TORQUE_MODE</code>** is not defined in the header file<code> **userparms.h.**</code>
+     - Ensure that the macros <code>**TUNING</code>, <code>OPEN_LOOP_FUNCTIONING</code>, and <code>TORQUE_MODE</code>** is not defined and **<code>SINGLE_SHUNT</code>** is defined in the header file<code> **userparms.h.**</code>
           <p align="left"><img  src="images/configParam.png"></p>
 
 
@@ -212,13 +212,14 @@ To view data plots continuously, uncheck **Single-shot.** When **Single-shot** i
  ## 6. REFERENCES:
 For additional information, refer following documents or links.
 1. AN1292 Application Note “[Sensorless Field Oriented Control (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW)](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/01292A.pdf)”
-2. dsPIC33EDV64MC205 Motor Control Development Board User’s Guide [(DS50002883)](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ProductDocuments/UserGuides/DS50002883A-dsPIC33EDV64MC205_Motor_Control_Development_Board_User%27s_Guide.pdf) 
-3. dsPIC33EDV64MC205 Family datasheet [(DS70005292)](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ProductDocuments/DataSheets/dsPIC33EDV64MC205-Data-Sheet-DS70005292F.pdf)
-4. [Family Reference Manuals (FRM) of dsPIC33EDV64MC205](https://www.microchip.com/en-us/product/dsPIC33EDV64MC205#document-table)
-5. MPLAB® X IDE User’s Guide (DS50002027) or MPLAB® X IDE help
-6. [MPLAB® X IDE installation](http://microchipdeveloper.com/mplabx:installation)
-7. [MPLAB® XC16 Compiler installation](http://microchipdeveloper.com/xc16:installation)
-8. [Installation and setup of X2Cscope plugin for MPLAB X](https://x2cscope.github.io/docs/MPLABX_Plugin.html)
+2. AN1299 Application Note “[Single-Shunt Three-Phase Current Reconstruction Algorithm for Sensorless FOC of a PMSM](http://ww1.microchip.com/downloads/en/appnotes/01299a.pdf)”
+3. dsPIC33EDV64MC205 Motor Control Development Board User’s Guide [(DS50002883)](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ProductDocuments/UserGuides/DS50002883A-dsPIC33EDV64MC205_Motor_Control_Development_Board_User%27s_Guide.pdf) 
+4. dsPIC33EDV64MC205 Family datasheet [(DS70005292)](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ProductDocuments/DataSheets/dsPIC33EDV64MC205-Data-Sheet-DS70005292F.pdf)
+5. [Family Reference Manuals (FRM) of dsPIC33EDV64MC205](https://www.microchip.com/en-us/product/dsPIC33EDV64MC205#document-table)
+6. MPLAB® X IDE User’s Guide (DS50002027) or MPLAB® X IDE help
+7. [MPLAB® X IDE installation](http://microchipdeveloper.com/mplabx:installation)
+8. [MPLAB® XC16 Compiler installation](http://microchipdeveloper.com/xc16:installation)
+9. [Installation and setup of X2Cscope plugin for MPLAB X](https://x2cscope.github.io/docs/MPLABX_Plugin.html)
 
 
 

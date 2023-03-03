@@ -55,6 +55,10 @@
 #include "diagnostics.h"
 #include "delay.h"
 
+#ifdef SINGLE_SHUNT
+    #include "singleshunt.h"
+#endif
+
 volatile UGF_T uGF;
 
 CTRL_PARM_T ctrlParm;
@@ -85,13 +89,14 @@ volatile uint16_t measCurrOffsetFlag = 0;
    Scaling down motorStartUpData.startupRamp to thetaElectricalOpenLoop   */
 #define STARTUPRAMP_THETA_OPENLOOP_SCALER       10 
 /** Define max voltage vector */
-#define MAX_VOLTAGE_VECTOR                      0.98
+#define MAX_VOLTAGE_VECTOR                      0.92
 
 void InitControlParameters(void);
 void DoControl(void);
 void CalculateParkAngle(void);
 void ResetParmeters(void);
-void MeasCurrOffset(int16_t *,int16_t *);
+void MeasCurrOffset(int16_t *,int16_t *,int16_t *);
+void PWMDutyCycleSet(MC_DUTYCYCLEOUT_T *);
 
 // *****************************************************************************
 /* Function:
@@ -121,10 +126,9 @@ int main ( void )
 {
     InitOscillator();
     SetupGPIOPorts();
-
     /* Initialize Peripherals */
-    InitPeripherals();
-    MeasCurrOffset(&measCurrParm.Offseta,&measCurrParm.Offsetb);
+    InitPeripherals(); 
+    MeasCurrOffset(&measCurrParm.Offseta,&measCurrParm.Offsetb,&measCurrParm.offsetBus);
     DiagnosticsInit();
     
     BoardServiceInit();
@@ -140,7 +144,7 @@ int main ( void )
         InitFWParams();
         /* Reset parameters used for running motor through Inverter A*/
         ResetParmeters();
-
+ 
         while(systemState != SYSTEM_READY)
         {
             BoardService();
@@ -173,7 +177,6 @@ int main ( void )
             }
             if (IsPressed_Button2())
             {
-                HAL_Board_AutoBaudRequest();
                 if ((uGF.bits.RunMotor == 1) && (uGF.bits.OpenLoop == 0))
                 {
                     uGF.bits.ChangeSpeed = !uGF.bits.ChangeSpeed;
@@ -233,6 +236,13 @@ void ResetParmeters(void)
     
     /* Initialize PI control parameters */
     InitControlParameters();        
+#ifdef SINGLE_SHUNT
+    /* Initialize Single Shunt Related parameters */
+    SingleShunt_InitializeParameters(&singleShuntParam);
+    INVERTERA_PWM_SEVTCMP = LOOPTIME_TCY;
+#else
+    INVERTERA_PWM_SEVTCMP = 0;
+#endif  
     /* Initialize estimator parameters */
     InitEstimParm();
     /* Initialize flux weakening parameters */
@@ -483,67 +493,78 @@ void DoControl( void )
  */
 void __attribute__((interrupt, no_auto_psv)) _ADCInterrupt(void)
 {
-
+    #ifdef SINGLE_SHUNT
+    /* If SINGLE_SHUNT is Enabled then single shunt three phase reconstruction
+       algorithm is executed in this ISR */   
+    if (uGF.bits.RunMotor)
+    {
+        /* If single shunt algorithm is enabled, three ADC interrupts will be
+		 serviced every PWM period in order to sample current twice and
+		 be able to reconstruct the three phases and to read the value of POT*/
+        
+        switch(singleShuntParam.adcSamplePoint)
+        {
+            /* This algorithm only reads one analog input when running in 
+                single shunt mode. During PWM Timer is counting down, sample
+                and hold zero is configured to read bus current. Once the 
+                algorithm is done measuring shunt current at two different 
+                times, then the input of this sample and hold is configured 
+                to read the POT when PWM Timer is counting up*/
+            case SS_SAMPLE_POT:
+                /*Set Trigger to measure BusCurrent first sample during PWM 
+                  Timer is counting down*/
+                INVERTERA_PWM_SEVTCMP = singleShuntParam.trigger1; 
+                singleShuntParam.adcSamplePoint = 1; 
+                /*Set ADC Channel 0 to measure Bus Current*/
+                AD1CHS0bits.CH0SA = ADC1_ANx_CH0_IBUS;
+                                            
+            break;
+            case SS_SAMPLE_BUS1:
+               
+                /*Set Trigger to measure BusCurrent Second sample during PWM 
+                  Timer is counting down*/
+                INVERTERA_PWM_SEVTCMP = singleShuntParam.trigger2;
+                singleShuntParam.adcSamplePoint = 2;  
+                /* Ibus is measured and offset removed from measurement*/
+                singleShuntParam.Ibus1 = (signed int)(ADCBUF_INV_A_IBUS) - measCurrParm.offsetBus;
+                /*PWM DutyCycle is operating in dual update mode and update
+                 duty cycle registers which will effective when PWM Timer 
+                 Counter is zero*/
+                PWMDutyCycleSet(&singleShuntParam.pwmDutycycle2);
+                
+            break;
+            case SS_SAMPLE_BUS2:
+                
+                /*Set Trigger to measure POT Value when PWM 
+                  Timer value is zero*/
+                INVERTERA_PWM_SEVTCMP = LOOPTIME_TCY;
+                singleShuntParam.adcSamplePoint = 0;
+                /* this interrupt corresponds to the second trigger and 
+                    save second current measured*/
+                /* Ibus is measured and offset removed from measurement*/
+                singleShuntParam.Ibus2 = (signed int)(ADCBUF_INV_A_IBUS) - measCurrParm.offsetBus;
+                /*Set ADC Channel 0 to measure POT Value*/
+                AD1CHS0bits.CH0SA = ADC1_ANx_CH0_POT;
+                /* Reconstruct Phase currents from Bus Current*/                
+                SingleShunt_PhaseCurrentReconstruction(&singleShuntParam);
+                /* Calculate qIa,qIb */
+                MeasCompCurr(singleShuntParam.Ia, singleShuntParam.Ib,&measCurrParm); 
+            break;
+            
+            default:
+            break;  
+        }
+        
+    }   
+#else  
+    /* When single shunt is not enabled, that is when is running dual 
+        shunt resistor algorithm, ADC interrupt is serviced only once*/
     if (uGF.bits.RunMotor)
     {
         /* Calculate qIa,qIb */
         MeasCompCurr(ADCBUF_INV_A_IPHASE1, ADCBUF_INV_A_IPHASE2,&measCurrParm);
-        iabc.a = measCurrParm.qIa;
-        iabc.b = measCurrParm.qIb;
-        /* Calculate qId,qIq from qSin,qCos,qIa,qIb */
-        MC_TransformClarke_Assembly(&iabc,&ialphabeta);
-        MC_TransformPark_Assembly(&ialphabeta,&sincosTheta,&idq);
-
-        /* Speed and field angle estimation */
-        Estim();
-        /* Calculate control values */
-        DoControl();
-        /* Calculate qAngle */
-        CalculateParkAngle();
-        /* if open loop */
-        if (uGF.bits.OpenLoop == 1)
-        {
-            /* the angle is given by park parameter */
-            thetaElectrical = thetaElectricalOpenLoop;
-        }
-        else
-        {
-            /* if closed loop, angle generated by estimator */
-            thetaElectrical = estimator.qRho;
-        }
-        MC_CalculateSineCosine_Assembly_Ram(thetaElectrical,&sincosTheta);
-        MC_TransformParkInverse_Assembly(&vdq,&sincosTheta,&valphabeta);
-
-        MC_TransformClarkeInverseSwappedInput_Assembly(&valphabeta,&vabc);
-        MC_CalculateSpaceVectorPhaseShifted_Assembly(&vabc,pwmPeriod,
-                                                    &pwmDutycycle);
-
-        if (pwmDutycycle.dutycycle1 < MIN_DUTY)
-        {
-            pwmDutycycle.dutycycle1 = MIN_DUTY;
-        }
-        if (pwmDutycycle.dutycycle2 < MIN_DUTY)
-        {
-            pwmDutycycle.dutycycle2 = MIN_DUTY;
-        }
-        if (pwmDutycycle.dutycycle3 < MIN_DUTY)
-        {
-            pwmDutycycle.dutycycle3 = MIN_DUTY;
-        }
-        INVERTERA_PWM_PDC1 = pwmDutycycle.dutycycle1;
-        INVERTERA_PWM_PDC2 = pwmDutycycle.dutycycle2;
-        INVERTERA_PWM_PDC3 = pwmDutycycle.dutycycle3;
-
     }
-    else
-    {
-        INVERTERA_PWM_PDC3 = MIN_DUTY;
-        INVERTERA_PWM_PDC2 = MIN_DUTY;
-        INVERTERA_PWM_PDC1 = MIN_DUTY;
-        measCurrOffsetFlag = 1;
-    }
-    DiagnosticsStepIsr();
-    BoardServiceStepIsr();
+#endif
     /* Clear Interrupt Flag */
     ClearADCIF();
 }
@@ -685,9 +706,9 @@ void __attribute__ ((interrupt, no_auto_psv)) _CNInterrupt(void)
     }
     ClearCNIF(); // Clear CN interrupt
 }
-void MeasCurrOffset(int16_t *pOffseta,int16_t *pOffsetb)
+void MeasCurrOffset(int16_t *pOffseta,int16_t *pOffsetb,int16_t *pOffsetbus)
 {    
-    int32_t adcOffsetIa = 0, adcOffsetIb = 0;
+    int32_t adcOffsetIa = 0, adcOffsetIb = 0,adcOffsetIbus=0;
     uint16_t i = 0;
                 
     /* Enable ADC interrupt and begin main loop timing */
@@ -703,13 +724,108 @@ void MeasCurrOffset(int16_t *pOffseta,int16_t *pOffsetb)
         /* Sum up the converted results */
         adcOffsetIa += ADCBUF_INV_A_IPHASE1;
         adcOffsetIb += ADCBUF_INV_A_IPHASE2;
+        adcOffsetIbus += ADCBUF_INV_A_IBUS;
     }
     /* Averaging to find current Ia offset */
     *pOffseta = (int16_t)(adcOffsetIa >> CURRENT_OFFSET_SAMPLE_SCALER);
     /* Averaging to find current Ib offset*/
     *pOffsetb = (int16_t)(adcOffsetIb >> CURRENT_OFFSET_SAMPLE_SCALER);
+    *pOffsetbus = (int16_t)(adcOffsetIbus >> CURRENT_OFFSET_SAMPLE_SCALER);
     measCurrOffsetFlag = 0;
     
     /* Make sure ADC does not generate interrupt while initializing parameters*/
     DisableADCInterrupt();
+}
+
+// *****************************************************************************
+/* Function:
+    PWM1Interrupt()
+  Summary:
+    PWM1Interrupt() ISR routine
+
+  Description:
+    Does speed calculation and executes the vector update loop
+    PWM Interrupt  is triggered by the PWM TRIG1.
+    The speed calculation assumes a fixed time interval between calculations.
+
+  Precondition:
+    None.
+
+  Parameters:
+    None
+
+  Returns:
+    None.
+
+  Remarks:
+    None.
+ */
+void __attribute__((interrupt, no_auto_psv)) _PWM1Interrupt(void)
+{
+  if (uGF.bits.RunMotor)
+    {        
+        iabc.a = measCurrParm.qIa;
+        iabc.b = measCurrParm.qIb;
+        /* Calculate qId,qIq from qSin,qCos,qIa,qIb */
+        MC_TransformClarke_Assembly(&iabc,&ialphabeta);
+        MC_TransformPark_Assembly(&ialphabeta,&sincosTheta,&idq);
+
+        /* Speed and field angle estimation */
+        Estim();
+        /* Calculate control values */
+        DoControl();
+        /* Calculate qAngle */
+        CalculateParkAngle();
+        /* if open loop */
+        if (uGF.bits.OpenLoop == 1)
+        {
+            /* the angle is given by park parameter */
+            thetaElectrical = thetaElectricalOpenLoop;
+        }
+        else
+        {
+            /* if closed loop, angle generated by estimator */
+            thetaElectrical = estimator.qRho;
+        }
+        MC_CalculateSineCosine_Assembly_Ram(thetaElectrical,&sincosTheta);
+        MC_TransformParkInverse_Assembly(&vdq,&sincosTheta,&valphabeta);
+
+        MC_TransformClarkeInverseSwappedInput_Assembly(&valphabeta,&vabc);
+        
+        #ifdef SINGLE_SHUNT
+            SingleShunt_CalculateSpaceVectorPhaseShifted(&vabc,pwmPeriod,&singleShuntParam);
+            PWMDutyCycleSet(&singleShuntParam.pwmDutycycle1);
+        #else
+            MC_CalculateSpaceVectorPhaseShifted_Assembly(&vabc,pwmPeriod,
+                                                            &pwmDutycycle);
+            PWMDutyCycleSet(&pwmDutycycle);
+        #endif
+    }
+    else
+    {
+     measCurrOffsetFlag = 1; 
+    }    
+    DiagnosticsStepIsr();
+    BoardServiceStepIsr();
+   
+    /* Clear Interrupt Flag */
+    ClearPWM1IF();
+}
+void PWMDutyCycleSet(MC_DUTYCYCLEOUT_T *pPwmDutycycle)
+{
+    if (pPwmDutycycle->dutycycle1 < MIN_DUTY)
+    {
+        pPwmDutycycle->dutycycle1 = MIN_DUTY;
+    }
+    if (pPwmDutycycle->dutycycle2 < MIN_DUTY)
+    {
+        pPwmDutycycle->dutycycle2 = MIN_DUTY;
+    }
+    if (pPwmDutycycle->dutycycle3 < MIN_DUTY)
+    {
+        pPwmDutycycle->dutycycle3 = MIN_DUTY;
+    }
+    INVERTERA_PWM_PDC1 = pPwmDutycycle->dutycycle1;
+    INVERTERA_PWM_PDC2 = pPwmDutycycle->dutycycle2;
+    INVERTERA_PWM_PDC3 = pPwmDutycycle->dutycycle3;
 }

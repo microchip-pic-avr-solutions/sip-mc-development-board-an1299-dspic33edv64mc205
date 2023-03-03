@@ -51,7 +51,9 @@ typedef struct
     int16_t   qKb;        
     int16_t   Offsetb;	
     int16_t   qIa;
-    int16_t   qIb;
+    int16_t   qIb; 
+    int16_t   qKbus;        
+	int16_t   offsetBus;
 } MEAS_CURR_PARM_T;
 
 /* Current measurement parameters */

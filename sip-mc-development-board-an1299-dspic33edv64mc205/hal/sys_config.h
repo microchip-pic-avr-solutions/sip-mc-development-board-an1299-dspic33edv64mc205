@@ -93,6 +93,7 @@
 #define INVERTERA_PWM_PDC2      PDC2
 #define INVERTERA_PWM_PDC3      PDC3
 
+#define INVERTERA_PWM_SEVTCMP   SEVTCMP        
 // ADC MODULE Related Definitions
 // Analog Channel No of Potentiometer #1 - used as Speed Reference
 // POT1 : PIM #32 (AN13)
@@ -101,12 +102,16 @@
 // VBUS_A : PIM #35 (AN10)
 #define ANx_VBUS_A              1
 
+#ifdef SINGLE_SHUNT          
+#define ADCBUF_SPEED_REF_A      ADC1BUF0
+#define ADCBUF_INV_A_IBUS       ADC1BUF0    
+#else
 // CH123SA = 1 is M1_IB = OA1/AN3 POT1 = OA2/AN0 M1_IA = OA3/AN6
 #define ADCBUF_SPEED_REF_A      ADC1BUF2
-#define ADCBUF_INV_A_IPHASE1    ADC1BUF1
-#define ADCBUF_INV_A_IPHASE2    ADC1BUF3
 #define ADCBUF_INV_A_IBUS       ADC1BUF0
-
+#endif  
+#define ADCBUF_INV_A_IPHASE1    ADC1BUF1
+#define ADCBUF_INV_A_IPHASE2    ADC1BUF3        
 // Specify bootstrap charging time in no of us
 #define BOOTSTRAP_CHARGING_TIME 30000
 // *****************************************************************************
