@@ -211,8 +211,8 @@ To view data plots continuously, uncheck **Single-shot.** When **Single-shot** i
  
  ## 6. REFERENCES:
 For additional information, refer following documents or links.
-1. AN1292 Application Note “[Sensorless Field Oriented Control (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW)](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/01292A.pdf)”
-2. AN1299 Application Note “[Single-Shunt Three-Phase Current Reconstruction Algorithm for Sensorless FOC of a PMSM](http://ww1.microchip.com/downloads/en/appnotes/01299a.pdf)”
+1. AN1299 Application Note “[Single-Shunt Three-Phase Current Reconstruction Algorithm for Sensorless FOC of a PMSM](http://ww1.microchip.com/downloads/en/appnotes/01299a.pdf)”
+2. AN1292 Application Note “[Sensorless Field Oriented Control (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW)](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/01292A.pdf)”
 3. dsPIC33EDV64MC205 Motor Control Development Board User’s Guide [(DS50002883)](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ProductDocuments/UserGuides/DS50002883A-dsPIC33EDV64MC205_Motor_Control_Development_Board_User%27s_Guide.pdf) 
 4. dsPIC33EDV64MC205 Family datasheet [(DS70005292)](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ProductDocuments/DataSheets/dsPIC33EDV64MC205-Data-Sheet-DS70005292F.pdf)
 5. [Family Reference Manuals (FRM) of dsPIC33EDV64MC205](https://www.microchip.com/en-us/product/dsPIC33EDV64MC205#document-table)
