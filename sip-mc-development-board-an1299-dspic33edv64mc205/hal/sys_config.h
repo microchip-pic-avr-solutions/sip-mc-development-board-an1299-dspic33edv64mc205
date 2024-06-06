@@ -103,17 +103,21 @@
 #define ANx_VBUS_A              1
 
 #ifdef SINGLE_SHUNT          
-#define ADCBUF_SPEED_REF_A      ADC1BUF0
-#define ADCBUF_INV_A_IBUS       ADC1BUF0    
+    #define ADCBUF_SPEED_REF_A      ADC1BUF0
+    #define ADCBUF_INV_A_IBUS       (int16_t)ADC1BUF0    
 #else
-// CH123SA = 1 is M1_IB = OA1/AN3 POT1 = OA2/AN0 M1_IA = OA3/AN6
-#define ADCBUF_SPEED_REF_A      ADC1BUF2
-#define ADCBUF_INV_A_IBUS       ADC1BUF0
+    // CH123SA = 1 is M1_IB = OA1/AN3 POT1 = OA2/AN0 M1_IA = OA3/AN6
+    #define ADCBUF_SPEED_REF_A      ADC1BUF2
+    #define ADCBUF_INV_A_IBUS       (int16_t)ADC1BUF0
 #endif  
-#define ADCBUF_INV_A_IPHASE1    ADC1BUF1
-#define ADCBUF_INV_A_IPHASE2    ADC1BUF3        
+#define ADCBUF_INV_A_IPHASE1    (int16_t)ADC1BUF1
+#define ADCBUF_INV_A_IPHASE2    (int16_t)ADC1BUF3        
 // Specify bootstrap charging time in no of us
-#define BOOTSTRAP_CHARGING_TIME 30000
+#define BOOTSTRAP_CHARGING_TIME 15000
+/* Bootstrap Capacitor Tickle Charge Time in Micro Seconds
+ * This time should not exceed 5 micro seconds */
+#define TICKLE_CHARGE_TIME_MICROSEC    1.4
+#define TICKLE_CHARGE_COUNTS     (uint16_t)(TICKLE_CHARGE_TIME_MICROSEC*FCY_MHZ)
 // *****************************************************************************
 // *****************************************************************************
 // Section: Interface Routines
