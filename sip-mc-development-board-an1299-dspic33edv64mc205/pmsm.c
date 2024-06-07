@@ -150,6 +150,7 @@ int main ( void )
             BoardService();
         }
         HAL_Board_FaultClear();
+        ChargeBootstrapCapacitors();           
         while(1)
         {
             DiagnosticsStepMain();
@@ -218,9 +219,10 @@ void ResetParmeters(void)
 	DisableADCInterrupt();
     
     /* Re initialize the duty cycle to minimum value */
-    INVERTERA_PWM_PDC1 = MIN_DUTY;
-    INVERTERA_PWM_PDC2 = MIN_DUTY;
-    INVERTERA_PWM_PDC3 = MIN_DUTY;
+    pwmDutycycle.dutycycle1 = MIN_DUTY;
+    pwmDutycycle.dutycycle2 = MIN_DUTY;
+    pwmDutycycle.dutycycle3 = MIN_DUTY;
+
     DisablePWMOutputsInverterA();
     
     /* Stop the motor   */
@@ -720,7 +722,7 @@ void MeasCurrOffset(int16_t *pOffseta,int16_t *pOffsetb,int16_t *pOffsetbus)
     {
         measCurrOffsetFlag = 0;
         /* Wait for the conversion to complete */
-        while (measCurrOffsetFlag == 1);
+        while (measCurrOffsetFlag == 0);
         /* Sum up the converted results */
         adcOffsetIa += ADCBUF_INV_A_IPHASE1;
         adcOffsetIb += ADCBUF_INV_A_IPHASE2;
@@ -803,7 +805,10 @@ void __attribute__((interrupt, no_auto_psv)) _PWM1Interrupt(void)
     }
     else
     {
-     measCurrOffsetFlag = 1; 
+        INVERTERA_PWM_PDC1 = pwmDutycycle.dutycycle1;
+        INVERTERA_PWM_PDC2 = pwmDutycycle.dutycycle2;
+        INVERTERA_PWM_PDC3 = pwmDutycycle.dutycycle3;
+        measCurrOffsetFlag = 1; 
     }    
     DiagnosticsStepIsr();
     BoardServiceStepIsr();

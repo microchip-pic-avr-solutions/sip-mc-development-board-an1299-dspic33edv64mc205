@@ -50,6 +50,7 @@
 // *****************************************************************************
 #include "userparms.h"
 #include "sys_config.h"
+#include "control.h"
 // *****************************************************************************
 // *****************************************************************************
 // Section: Constants
@@ -176,6 +177,7 @@ void InitAmplifiersComparator(void);
 void InitPWMGenerators(void);
 void SetupGPIOPorts(void);
 void InitPeripherals(void);
+void ChargeBootstrapCapacitors(void);
 
 #ifdef __cplusplus
 }
