@@ -41,6 +41,7 @@ extern "C" {
 #endif
     
 #include <stdint.h>
+#include "motor_control_types.h"
 
 /* Control Parameter data type
 

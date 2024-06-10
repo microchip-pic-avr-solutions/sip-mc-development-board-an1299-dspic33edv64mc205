@@ -1,3 +1,7 @@
+# sip-mc-development-board-an1299-dspic33edv64mc205 v1.0.2
+### Release Highlights
+Bug Fixing - Phase current Offset measurement and Bootstrap capacitor charging sequence
+
 # sip-mc-development-board-an1299-dspic33edv64mc205 v1.0.1
 ### Release Highlights
 The short description changed - Added single-shunt current reconstruciton algorithm

@@ -3,7 +3,7 @@
 
 
 ## 1. INTRODUCTION
-This document describes the setup requirements for driving a Permanent Magnet Synchronous Motor (PMSM) using Sensorless Field Oriented Control (FOC), PLL Estimator and Single-Shunt Current Reconstruction algorithm on the hardware platform dsPIC33EDV64MC205 Motor Control Development Board.
+This document describes the setup requirements for driving a Permanent Magnet Synchronous Motor (PMSM) using Sensorless Field Oriented Control (FOC), PLL Estimator and Single-Shunt Current Reconstruction algorithm on the hardware platform dsPIC33EDV64MC205 Motor Control Development Board[(DM330027)](https://www.microchip.com/en-us/development-tool/dm330027).
 
 For details about PLL estimator, refer to Microchip application note [AN1292](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/01292A.pdf) “Sensorless Field Oriented Control (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW)”.
 
@@ -23,10 +23,10 @@ To clone or download this application firmware on GitHub,
 >In this document, hereinafter this firmware package is referred as **firmware.**
 ### 2.2 Software Tools Used for Testing the firmware
 
-- MPLAB® X IDE **v6.05** 
-- DFP: **dsPIC33EDV-MC-205_DFP(1.3.77)**
-- MPLAB® XC16 Compiler **v2.00**
-- MPLAB® X IDE Plugin: **X2C-Scope v1.3.3** 
+- MPLAB® X IDE **v6.20** 
+- DFP: **dsPIC33EDV-MC-205_DFP(1.4.252)**
+- MPLAB® XC-DSC Compiler **v3.10**
+- MPLAB® X IDE Plugin: **X2C-Scope v1.6.6** 
 > **Note:** </br>
 >The software used for testing the firmware prior to release is listed above. It is recommended to use the version listed above or later versions for building the firmware.
 ### 2.3 Hardware Tools Required for the Demonstration
@@ -40,7 +40,7 @@ To clone or download this application firmware on GitHub,
 </br>
 
 ## 3. HARDWARE SETUP
-This section describes hardware setup required for the demonstration. Motor currents are amplified by the amplifiers internal to the dsPIC33EDV64MC205.
+This section describes hardware setup required for the demonstration. By default, the motor phase currents are amplified by the amplifiers internal to the dsPIC33EDV64MC205 and the bus current is amplified by the amplifier MCP6021(U2) on the development board.
 
 1. Disconnect power to the dsPIC33EDV64MC205 Motor Control Development Board. 
 
@@ -64,13 +64,13 @@ This section describes hardware setup required for the demonstration. Motor curr
  </br>
 
 ## 4. SOFTWARE SETUP AND RUN
-### 4.1 Setup: MPLAB X IDE and MPLAB XC16 Compiler
-Install **MPLAB X IDE** and **MPLAB XC16 Compiler** versions that support the device **dsPIC33EDV64MC205** and **PICKIT4.** The MPLAB X IDE, MPLAB XC16 Compiler, and X2C-Scope plug-in used for testing the firmware are mentioned in the [Motor Control Application Firmware Required for the Demonstration](#21-motor-control-application-firmware-required-for-the-demonstration) section. 
+### 4.1 Setup: MPLAB X IDE and MPLAB XC-DSC Compiler
+Install **MPLAB X IDE** and **MPLAB XC-DSC Compiler** versions that support the device **dsPIC33EDV64MC205** and **PICkit4.** The MPLAB X IDE, MPLAB XC-DSC Compiler, and X2C-Scope plug-in used for testing the firmware are mentioned in the [Motor Control Application Firmware Required for the Demonstration](#21-motor-control-application-firmware-required-for-the-demonstration) section. 
 
 To get help on  
 
 - MPLAB X IDE installation, refer [link](https://microchipdeveloper.com/mplabx:installation)
-- MPLAB XC16 Compiler installation steps, refer [link](https://microchipdeveloper.com/xc16:installation)
+- MPLAB XC-DSC Compiler installation steps, refer [link](https://developerhelp.microchip.com/xwiki/bin/view/software-tools/xc-dsc/install/)
 
 If MPLAB IDE v8 or earlier is already installed on your computer, then run the MPLAB driver switcher (Installed when MPLAB®X IDE is installed) to switch from MPLAB IDE v8 drivers to MPLAB X IDE drivers. If you have Windows 8 or 10, you must run the MPLAB driver switcher in **Administrator Mode**. To run the Device Driver Switcher GUI application as administrator, right-click on the executable (or desktop icon) and select **Run as Administrator**. For more details, refer to the MPLAB X IDE help topic **“Before You Begin: Install the USB Device Drivers (For Hardware Tools): USB Driver Installation for Windows Operating Systems.”**
 
@@ -81,7 +81,7 @@ X2C-Scope is an MPLAB X IDE plugin that allows developers to interact with an ap
 ### 5.1 Firmware Description
 The firmware version needed for the demonstration is mentioned in the section [Motor Control Application Firmware Required for the Demonstration](#21-motor-control-application-firmware-required-for-the-demonstration) section. This firmware is implemented to work on Microchip’s 16-bit Digital signal controller (dsPIC® DSC) **dsPIC33EDV64MC205**. For more information, see the **dsPIC33EDV64MC205 Family datasheet [(DS70005292)](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ProductDocuments/DataSheets/dsPIC33EDV64MC205-Data-Sheet-DS70005292F.pdf)**.
 
-The Motor Control Demo application uses a push button to start or stop the motor and a potentiometer to vary the speed of the motor. This Motor Control Demo Application configures and uses peripherals like PWM, ADC, UART, etc. For more details, refer to Microchip Application note **[AN1292](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/01292A.pdf), “Sensorless Field Oriented Control (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW),”** and  **[AN1299](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ApplicationNotes/ApplicationNotes/01299A.pdf),"Single-Shunt Three-Phase Current Reconstruction Algorithm for Sensorless FOC of a PMSM"** available on the [Microchip website.]((https://www.microchip.com/).)
+The Motor Control Demo application uses a push button to start or stop the motor and a potentiometer to vary the speed of the motor. This Motor Control Demo Application configures and uses peripherals like PWM, ADC, UART, etc. For more details, refer to Microchip Application note **[AN1292](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/01292A.pdf), “Sensorless Field Oriented Control (FOC) for a Permanent Magnet Synchronous Motor (PMSM) Using a PLL Estimator and Field Weakening (FW),”** and  **[AN1299](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ApplicationNotes/ApplicationNotes/01299A.pdf),"Single-Shunt Three-Phase Current Reconstruction Algorithm for Sensorless FOC of a PMSM"** available on the [Microchip website](https://www.microchip.com/en-us/application-notes).
 
 > **Note:**</br>
 > The project may not build correctly in Windows OS if the Maximum path length of any source file in the project is more than 260 characters. In case the absolute path exceeds or nears the maximum length, do any (or both) of the following:
@@ -106,19 +106,21 @@ Follow the below instructions, step by step, to set up and run the motor control
 3. Open <code>**userparms.h** </code> (**pmsm.X > Header Files**) in the project **pmsm.X.**  
      - Ensure that the macros <code>**TUNING</code>, <code>OPEN_LOOP_FUNCTIONING</code>, and <code>TORQUE_MODE</code>** is not defined and **<code>SINGLE_SHUNT</code>** is defined in the header file<code> **userparms.h.**</code>
           <p align="left"><img  src="images/configParam.png"></p>
-
+> **Note:**</br>
+>The motor phase currents are reconstructed from the DC Bus current by appropriately sampling it during the PWM switching period, called as single-shunt reconstruction algorithm. The firmware is configured to demonstrate **the single shunt reconstruction algorithm** by defining the macro <code>**SINGLE_SHUNT**</code> in the header file <code>**userparms.h**</code>.
+>For additional information, refer to Microchip application note **[AN1299](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ApplicationNotes/ApplicationNotes/01299A.pdf), “Single-Shunt Three-Phase Current Reconstruction Algorithm for Sensorless FOC of a PMSM.”**
 
 4. Right-click on the project **pmsm.X** and select **Properties** to open its **Project Properties** Dialog. Click the **Conf:[default]** category to reveal the general project configuration information. The development tools used for testing the firmware are listed in section [2.2 Software Tools Used for Testing the firmware.](#22-software-tools-used-for-testing-the-firmware).
 
      In the **Conf:[default]** category window: 
      - Ensure the selected **Device** is **dsPIC33EDV64MC205.**
      - Select the **Connected Hardware Tool** to be used for programming and debugging. 
-     - Select the specific Device Family Pack (DFP) from the available list of **Packs.** In this case, **dsPIC33EDV-MC-205_DFP 1.3.77** is selected. 
-     - Select the specific **Compiler Toolchain** from the available list of **XC16** compilers. 
-     In this case, **XC16(v2.00)** is selected.
+     - Select the specific Device Family Pack (DFP) from the available list of **Packs.** In this case, **dsPIC33EDV-MC-205_DFP 1.4.252** is selected. 
+     - Select the specific **Compiler Toolchain** from the available list of **XC-DSC** compilers. 
+     In this case, **XC-DSC(v3.10)** is selected.
      - After selecting Hardware Tool and Compiler Toolchain, Device Pack, click the button **Apply**
 
-     Please ensure that the selected MPLAB® XC16 Compiler and Device Pack support the device configured in the firmware
+     Please ensure that the selected MPLAB® XC-DSC Compiler and Device Pack support the device configured in the firmware
 
      <p align="left">
      <img  src="images/projectpropertiessettings.PNG"></p>
@@ -128,6 +130,15 @@ Follow the below instructions, step by step, to set up and run the motor control
       <p align="left">
       <img  src="images/loadvariables.png"></p>
 
+     Also, go to **Tools > Options** , and
+           
+      <p align="left">
+      <img  src="images/tools_options.png"></p>
+      
+    Open the  **Embedded > Generic Settings** tab and ensure that the **ELF debug session symbol load methodology (MIPS/ARM)** is selected as **Pre-procesed (Legacy)** from the drop down.
+           
+      <p align="left">
+      <img  src="images/embedded_legacy.png"></p>
 6. To build the project (in this case, **pmsm.X**) and program the device dsPIC33EDV64MC205, click **Make and Program Device Main project** on the toolbar
     <p align="left">
     <img  src="images/deviceprogramming.png"></p>
@@ -219,9 +230,9 @@ For additional information, refer following documents or links.
 3. dsPIC33EDV64MC205 Motor Control Development Board User’s Guide [(DS50002883)](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ProductDocuments/UserGuides/DS50002883A-dsPIC33EDV64MC205_Motor_Control_Development_Board_User%27s_Guide.pdf) 
 4. dsPIC33EDV64MC205 Family datasheet [(DS70005292)](https://ww1.microchip.com/downloads/aemDocuments/documents/MCU16/ProductDocuments/DataSheets/dsPIC33EDV64MC205-Data-Sheet-DS70005292F.pdf)
 5. [Family Reference Manuals (FRM) of dsPIC33EDV64MC205](https://www.microchip.com/en-us/product/dsPIC33EDV64MC205#document-table)
-6. MPLAB® X IDE User’s Guide (DS50002027) or MPLAB® X IDE help
+6. MPLAB® X IDE User’s Guide [(DS50002027)](https://ww1.microchip.com/downloads/en/DeviceDoc/50002027E.pdf) or [MPLAB® X IDE help](https://microchipdeveloper.com/xwiki/bin/view/software-tools/x/)
 7. [MPLAB® X IDE installation](http://microchipdeveloper.com/mplabx:installation)
-8. [MPLAB® XC16 Compiler installation](http://microchipdeveloper.com/xc16:installation)
+8. [MPLAB® XC-DSC Compiler installation](https://developerhelp.microchip.com/xwiki/bin/view/software-tools/xc-dsc/install/)
 9. [Installation and setup of X2Cscope plugin for MPLAB X](https://x2cscope.github.io/docs/MPLABX_Plugin.html)
 
 
